@@ -25,7 +25,7 @@ Secondly, this guide aims to cross-reference AWS best practices for implementing
 
 Finally, this guide complements the AWS NZISM Conformance Pack by describing the continuous compliance checks performed by the conformance pack, how they relate to NZISM controls, and providing advice on remediating non-compliant resources identifies by the conformance pack.
 
-The main body of this document has adopted the structure and indexing of the [NZISM Version 3.4 (December 2020)](#nzism) control objectives for the convenience of agencies working through Certification and Accrediation processes, and auditors working through NZISM Conformance Pack findings.
+The main body of this document has adopted the structure and indexing of the [NZISM Version 3.4 (December 2020)](#nzism) control objectives for the convenience of agencies working through Certification and Accreditation processes, and auditors working through NZISM Conformance Pack findings.
 
 
 ---
@@ -404,7 +404,7 @@ You are responsible for ensuring that [AWS On-Premises Devices](#dfn-opd) are se
 AWS is responsible for ensuring that mechanisms and associated auditing processes identify attempts to bypass the physical security of systems within the [AWS Global Infrastructure](#dfn-gi). You have self-service access to [independent assessments](#dfn-ia) of these mechanisms and audit processes.
 
 #### Agency Responsibilities
-You are responsibile for ensuring that tamper evident seals and associated auditing processes identify attempts to bypass the physical security of [AWS On-Premises Devices](#dfn-opd).
+You are responsible for ensuring that tamper evident seals and associated auditing processes identify attempts to bypass the physical security of [AWS On-Premises Devices](#dfn-opd).
 
 [AWS Outposts](#dfn-outposts)
 > As part of the shared responsibility model, you are responsible for attesting to physical security and access controls around the Outpost device.
@@ -581,7 +581,7 @@ The commitment regarding *Access* is relevant to agency information ownership:
 ### 22.1.24.C.04
 #### CID 4839
 
-#### Agency Responsibilties
+#### Agency Responsibilities
 You should consider the use of encryption for data in transit and at rest.
 
 #### Agency Guidance
@@ -652,7 +652,7 @@ You should consider this pattern if you have multiple product teams, each managi
 The following figure illustrates a sample environment with two application accounts, `X` and `Y`, each running fleets of EC2 instances. Account `Y` has deployed an Internet-facing [ALB](#ug-alb). The environment includes two data centres, `North` and `South`, each connecting to a Direct Connect Point-of-Presence, `DX PoP-1` and `DX PoP-2`, respectively. Alternative ISP routes are provisioned.
 ![Architecture Overview](figures/apc-gateways.png)
 
-`(01)`: The Production Networks Account owns all production VPCs. In this environment, there are three VPCs: `X`, `Y` and `Inspection`.
+**(01)**: The Production Networks Account owns all production VPCs. In this environment, there are three VPCs: `X`, `Y` and `Inspection`.
 
 `(02)`: VPC `X` spans two availability zones; `AZ a` and `AZ b`. Availability zone `AZ a` contains two subnets; `Xapp-a` and `Xattach-a`. Availability zone `AZ b` also contains two corresponding subnets. 
 
@@ -660,63 +660,63 @@ The following figure illustrates a sample environment with two application accou
 ### Implementation Example
 
 #### Networks
-| Network           | CIDR
-|-------------------|----------------
-| VPC X             | 10.0.0.0/25
-| VPC Y             | 10.0.0.128/25
-| VPC Inspection    | 10.10.10.0/24
-| Data Centre North | 172.16.0.0/17
-| Data Centre South | 172.16.128.0/17
+| Network             | CIDR
+|---------------------|----------------
+| VPC `X`             | 10.0.0.0/25
+| VPC `Y`             | 10.0.0.128/25
+| VPC `Inspection`    | 10.10.10.0/24
+| Data Centre `North` | 172.16.0.0/17
+| Data Centre `South` | 172.16.128.0/17
 
 
 #### TGW Attachments
-| Name        | Type | Attachment Points 
-|-------------|------|-------------------------------------
-| X           | VPC  | Subnets: Xattach-a, Xattach-b
-| Y           | VPC  | Subnets: Yattach-a, Yattach-b
-| Inspection  | VPC  | Subnets: Attach-a, Attach-b
-| VPN-1       | VPN  | Customer Gateway: Data Centre North
-| VPN-2       | VPN  | Customer Gateway: Data Centre South
+| Name          | Type | Attachment Points 
+|---------------|------|-------------------------------------
+| `X`           | VPC  | Subnets: `Xattach-a`, `Xattach-b`
+| `Y`           | VPC  | Subnets: `Yattach-a`, `Yattach-b`
+| `Inspection`  | VPC  | Subnets: `Attach-a`, `Attach-b`
+| `VPN-1`       | VPN  | Customer Gateway for Data Centre `North`
+| `VPN-2`       | VPN  | Customer Gateway for Data Centre `South`
 
 
 #### TGW Route Tables
-| Name     |East-West | Associations  | Propagations       | Static Routes
-|----------|----------|---------------|--------------------|---------------
-| App      | Yes      | X, Y          | -                  | 0.0.0.0/0 → Inspection
-|          | No       | X, Y          | X, Y               | 0.0.0.0/0 → Inspection
-| DC       | -        | VPN-1, VPN-2  | -                  | 10.0.0.0/24 → Inspection
-| Egress   | -        | Inspection    | X, Y, VPN-1, VPN-2 | -
+| Name       |East-West | Associations      | Propagations               | Static Routes
+|------------|----------|-------------------|----------------------------|---------------
+| `App`      | Yes      | `X`, `Y`          | -                          | 0.0.0.0/0 → `Inspection`
+|            | No       | `X`, `Y`          | `X`, `Y`                   | 0.0.0.0/0 → `Inspection`
+| `DC`       | -        | `VPN-1`, `VPN-2`  | -                          | 10.0.0.0/24 → `Inspection`
+| `Egress`   | -        | `Inspection`      | `X`, `Y`, `VPN-1`, `VPN-2` | -
 
 
 #### VPC Route Tables
 | Route Table          | Destination     | Target
-|----------------------|-----------------|--------
-| Xapp                 | 10.0.0.0/25     | local
-|                      | 0.0.0.0/0       | TGW Attachment: X
-| Xattach              | 10.0.0.0/25     | local
-| Yalb                 | 10.0.0.0.128/25 | local
-|                      | 0.0.0.0/0       | IGW: Y
-| Yapp                 | 10.0.0.0.128/25 | local
-|                      | 0.0.0.0/0       | TGW Attachment: Y
-| Yattach              | 10.0.0.0.128/25 | local
-| Attach-a             | 10.10.10.0/24   | local
-|                      | 0.0.0.0/0       | GWLB Endpoint: gwlb-a
-| Appliance-a          | 10.10.10.0/24   | local
-|                      | 10.0.0.0/24     | TGW Attachment: Inspection
-|                      | 172.16.0.0/16   | TGW Attachment: Inspection
-|                      | 0.0.0.0/0       | NATGW: nat-a
-| NAT-a                | 10.10.10.0/24   | local
-|                      | 10.0.0.0/24     | GWLB Endpoint: gwlba-a 
-|                      | 0.0.0.0/0       | IGW: Inspection
-| Attach-b             | 10.10.10.0/24   | local
-|                      | 0.0.0.0/0       | GWLB Endpoint: gwlb-b
-| Appliance-b          | 10.10.10.0/24   | local
-|                      | 10.0.0.0/24     | TGW Attachment: Inspection
-|                      | 172.16.0.0/16   | TGW Attachment: Inspection
-|                      | 0.0.0.0/0       | NATGW: nat-b
-| NAT-b                | 10.10.10.0/24   | local
-|                      | 10.0.0.0/24     | GWLB Endpoint: gwlba-b 
-|                      | 0.0.0.0/0       | IGW: Inspection
+|------------------------|-----------------|--------
+| `Xapp`                 | 10.0.0.0/25     | local
+|                        | 0.0.0.0/0       | TGW Attachment: `X`
+| `Xattach`              | 10.0.0.0/25     | local
+| `Yalb`                 | 10.0.0.0.128/25 | local
+|                        | 0.0.0.0/0       | IGW: `Y`
+| `Yapp`                 | 10.0.0.0.128/25 | local
+|                        | 0.0.0.0/0       | TGW Attachment: `Y`
+| `Yattach`              | 10.0.0.0.128/25 | local
+| `Attach-a`             | 10.10.10.0/24   | local
+|                        | 0.0.0.0/0       | GWLB Endpoint: `gwlb-a`
+| `Appliance-a`          | 10.10.10.0/24   | local
+|                        | 10.0.0.0/24     | TGW Attachment: `Inspection`
+|                        | 172.16.0.0/16   | TGW Attachment: `Inspection`
+|                        | 0.0.0.0/0       | NATGW: `nat-a`
+| `NAT-a`                | 10.10.10.0/24   | local
+|                        | 10.0.0.0/24     | GWLB Endpoint: `gwlba-a`
+|                        | 0.0.0.0/0       | IGW: `Inspection`
+| `Attach-b`             | 10.10.10.0/24   | local
+|                        | 0.0.0.0/0       | GWLB Endpoint: `gwlb-b`
+| `Appliance-b`          | 10.10.10.0/24   | local
+|                        | 10.0.0.0/24     | TGW Attachment: `Inspection`
+|                        | 172.16.0.0/16   | TGW Attachment: `Inspection`
+|                        | 0.0.0.0/0       | NATGW: `nat-b`
+| `NAT-b`                | 10.10.10.0/24   | local
+|                        | 10.0.0.0/24     | GWLB Endpoint: `gwlba-b` 
+|                        | 0.0.0.0/0       | IGW: `Inspection`
 
 
 
@@ -732,7 +732,7 @@ The following figure illustrates a sample environment with two application accou
 # Security Foundations
 
 ## Security Governance
-Security governance is meant to support your business objectives by defining policies and control objectives to help manage risk. Partitioning cloud security into three layers; the capabilites that AWS provides, foundational controls, and an application-specific layer, is a useful mental model. More specifically:
+Security governance is meant to support your business objectives by defining policies and control objectives to help manage risk. Partitioning cloud security into three layers; the capabilities that AWS provides, foundational controls, and an application-specific layer, is a useful mental model. More specifically:
 
 * *AWS-Provided Capabilities*: To understand what this layer provides, first review the [Shared Responsibility Model](#dfn-srm), and then the [Independent Assessments of AWS Security Controls](#dfn-ia). For a wider perspective, review the reports published in [AWS Artifact](#aws-artifact). This knowledge provides clarity on what you are responsible for on the customer side and what you inherit from AWS.
 
@@ -1051,7 +1051,7 @@ This is often measured for one-minute or five-minute periods. Then a monthly upt
 Many systems have hard dependencies on other systems, where an interruption in a dependent system directly translates to an interruption of the invoking system. This is opposed to a soft dependency, where a failure of the dependent system is compensated for in the application. Where such hard dependencies occur, the invoking system’s availability is the product of the dependent systems’ availabilities. For example, if you have a system designed for 99.99% availability that has a hard dependency on two other independent systems that each are designed for 99.99% availability, the workload can theoretically achieve 99.97% availability:
 ```
 Availability of workload =
- Availabilty of invoking system × Availability of dependency1 × Availability of dependency2 
+ Availability of invoking system × Availability of dependency1 × Availability of dependency2 
 ```
 
 It’s therefore important to understand your dependencies and their availability design goals as you calculate your own. 
@@ -1561,7 +1561,7 @@ AWS has prepared a response to the Vendor questions in the GCDO Cloud Risk Asses
 
 AWS regularly updates its responses to reflect new services, new capabilities, and the expansion of the AWS Global Infrastructure. To obtain a copy of the most recent AWS response set, you can:
 * Search [AWS Artifact](#aws-artifact), or
-* Contact one of the following @amazon.com: Stephen Isaacs (isaaste@), or Craig Roach (craigar@). 
+* Contact one of the following @amazon.com: `Stephen Isaacs (isaaste@)`, or `Craig Roach (craigar@)`. 
 
 
 ### AWS NZ Cloud Framework Agreement <a id='nzcfa'/>
