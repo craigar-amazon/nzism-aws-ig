@@ -652,6 +652,16 @@ You should consider this pattern if you have multiple product teams, each managi
 ## How It Works
 This pattern uses a [Transit Gateway](#ug-tgw) to route both VPC and VPN traffic through a highly available, auto-scaling cluster of virtual firewall appliances managed by a [Gateway Load Balancer](#ug-gwlb). The Transit Gateway terminates VPN connections from two (or more) on-premises data centres.
 
+The Transit Gateway is the next-hop router for all *application SDLC VPCs*. An application SDLC VPC provides connectivity for the compute, database, analytics, and storage resources associated with one or more line-of-business applications, at a specific phase of the system development lifecycle. Examples of an application SDLC VPC might include: *Patient Portal UAT*, *Payments Production*, or *Case Management Development*.
+
+The Transit Gateway is also the next-hop router for the Inspection VPC. All these VPCs, and the Transit Gateway itself, are owned by a single *Production Networks Account*.
+
+Application SDLC AWS accounts create and own the compute, database, analytics, and storage resources required by the application. The networking resources required by these application resources - such as subnets and [VPC endpoints](#ug-vpc-endpoints) - are shared with the application SDLC account by the Production Networks Account using [AWS Resource Access Manager](#ug-ram).
+
+This delegation of responsibilities is enforced by a [Service Control Policy (SCP)](#ug-scp) which denies VPC egress configuration permission to application SDLC accounts. To facilitate this, application SDLC accounts are linked to an *Application OU*, while the Production Networks Account is linked to an *Infrastructure OU*.
+
+
+
 
 ### Virtual Firewall Appliances
 Firewall appliance products can be selected from AWS Marketplace. Examples include:
@@ -675,7 +685,7 @@ The following figure illustrates a sample environment with two application accou
 
 **(01)**: The Production Networks Account owns all production VPCs. In this environment, there are three VPCs: `X`, `Y` and `Inspection`.
 
-`(02)`: VPC `X` spans two availability zones; `AZ a` and `AZ b`. Availability zone `AZ a` contains two subnets; `Xapp-a` and `Xattach-a`. Availability zone `AZ b` also contains two corresponding subnets. 
+**(02)**: VPC `X` spans two availability zones; `AZ a` and `AZ b`. Availability zone `AZ a` contains two subnets; `Xapp-a` and `Xattach-a`. Availability zone `AZ b` also contains two corresponding subnets. 
 
 
 
