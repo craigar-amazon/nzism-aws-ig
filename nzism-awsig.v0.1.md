@@ -624,37 +624,62 @@ You should consider this pattern if you have multiple product teams, each managi
 
 
 ## In Scope
-* Routes to on-premises systems for AWS compute resources such as [EC2 instances](#ug-ec2]) and [Lambda](#ug-lambda) functions,
+* Routes to on-premises systems for AWS compute resources such as [EC2 instances](#ug-ec2) and [Lambda](#ug-lambda) functions,
 * Routes to VPC-based compute and database resources for on-premises systems,
 * Routes to [VPC endpoints](#ug-vpc-endpoints) and [PrivateLink](#ug-vpc-privatelink) for on-premises systems,
 * Internet ingress routes for [load balancers](#ug-lb) and EC2 instances,
 * Internet egress routes for AWS compute resources,
 * Layer 7 inspection of traffic between on-premises systems and AWS resources (North-South),
 * Layer 7 inspection of Internet egress traffic from AWS resources,
-* Optional Layer 7 inspection of traffic between resources owned by different AWS application account(East-West).
+
+
+## Options
+* Layer 7 inspection of traffic between resources owned by different AWS application account (East-West).
+* A pair of Direct Connect [Public Virtual Interfaces](#ug-dx-vif), using diverse Direct Connect Points-of-Presence (PoPs), configured as the preferred routes for the IPsec VPN tunnels. This the [recommended best practice](#article-dx-resiliency) for critical workloads.
+
 
 ## Out of Scope
 * Layer 7 inspection of Internet ingress traffic to [load balancers](#ug-lb),
 * Layer 7 inspection of Internet ingress traffic to EC2 instances.
 
 
-## Input Parameters
+## Input Parameters for Pattern
 * VPC requirements for each application AWS account, including whether East-West inspection is required, and whether Internet-facing resources such as load balancers are required,
 * On-premises customer gateway configurations for [site-to-site VPNs](#ug-vpn-s2s),
-* Firewall appliance product selections from AWS Marketplace. Examples include:
-> * [Check Point](#partner-checkpoint-firewall)
-> * [Cisco](#partner-cisco-firewall)
-> * [Fortinet](#partner-fortinet-firewall)
-> * [Trend Micro](#partner-trendmicro-firewall)
+* Firewall appliance configurations and rule sets.
 
 
-## Description
+## How It Works
+This pattern uses a [Transit Gateway](#ug-tgw) to route both VPC and VPN traffic through a highly available, auto-scaling cluster of virtual firewall appliances managed by a [Gateway Load Balancer](#ug-gwlb). The Transit Gateway terminates VPN connections from two (or more) on-premises data centres.
+
+
+### Virtual Firewall Appliances
+Firewall appliance products can be selected from AWS Marketplace. Examples include:
+* [Check Point](#partner-checkpoint-firewall)
+* [Cisco](#partner-cisco-firewall)
+* [Fortinet](#partner-fortinet-firewall)
+* [Trend Micro](#partner-trendmicro-firewall)
+
+### Direct Connect
+A public virtual interface (VIF) allows you to access all AWS public services and endpoints using their public IP addresses. When you create a VPN attachment on the Transit Gateway, you get two public IP addresses for VPN termination at the AWS end. These public IPs are reachable over the public VIF. You can create as many VPN connections as you want over a Public VIF. When you create a BGP peering over the public VIF, AWS advertises the entire AWS public IP range to your router.
+
+Transit Gateway supports [Equal-Cost Multi-Path (ECMP)](#wiki-ecmp) on VPN attachments. Each VPN connection has a maximum of 1.25-Gbps throughput, and enabling ECMP allows you to aggregate throughput across VPN connections.
+
+Refer to the [Building a Scalable and Secure Multi-VPC AWS Network Infrastructure](#wp-multi-vpc-networking) for details.
+
+
+
+## Example
 The following figure illustrates a sample environment with two application accounts, `X` and `Y`, each running fleets of EC2 instances. Account `Y` has deployed an Internet-facing [ALB](#ug-alb). The environment includes two data centres, `North` and `South`, each connecting to a Direct Connect Point-of-Presence, `DX PoP-1` and `DX PoP-2`, respectively. Alternative ISP routes are provisioned.
 ![Architecture Overview](figures/apc-gateways.png)
 
 **(01)**: The Production Networks Account owns all production VPCs. In this environment, there are three VPCs: `X`, `Y` and `Inspection`.
 
 `(02)`: VPC `X` spans two availability zones; `AZ a` and `AZ b`. Availability zone `AZ a` contains two subnets; `Xapp-a` and `Xattach-a`. Availability zone `AZ b` also contains two corresponding subnets. 
+
+
+
+
 
 
 ### Implementation Example
@@ -1651,6 +1676,8 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ### Tagging Best Practices <a id='wp-tagging'/>
 > <https://docs.aws.amazon.com/whitepapers/latest/tagging-best-practices/welcome.html>
 
+### Building a Scalable and Secure Multi-VPC AWS Network Infrastructure <a id='wp-multi-vpc-networking'/>
+> <https://docs.aws.amazon.com/whitepapers/latest/building-scalable-secure-multi-vpc-network-infrastructure/welcome.html>
 
 ## AWS User Guides
 
@@ -1891,6 +1918,15 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ### Amazon Direct Connect <a id='ug-dx'/>
 > <https://docs.aws.amazon.com/directconnect/latest/UserGuide/Welcome.html>
 
+#### Dedicated Port Connections <a id='ug-dx-cx-dedicated'/>
+> <https://docs.aws.amazon.com/directconnect/latest/UserGuide/create-connection.html>
+
+#### Hosted Connections <a id='ug-dx-cx-hosted'/>
+> <https://docs.aws.amazon.com/directconnect/latest/UserGuide/accept-hosted-connection.html>
+
+#### Virtual Interfaces <a id='ug-dx-vif'/>
+> <https://docs.aws.amazon.com/directconnect/latest/UserGuide/create-vif.html>
+
 ### Elastic Load Balancing <a id='ug-lb'/>
 
 ### Application Load Balancer <a id='ug-alb'/>
@@ -1901,6 +1937,9 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ### Network Load Balancer <a id='ug-nlb'/>
 > <https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html>
+
+### Gateway Load Balancer <a id='ug-gwlb'/>
+> <https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/introduction.html>
 
 ### AWS Global Accelerator <a id='ug-ga'/>
 > <https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html>
@@ -2081,7 +2120,18 @@ You can use AWS WAF to create custom, application-specific rules that block atta
 ### Zero Trust Architectures <a id='article-zerotrust'/>
 > <https://aws.amazon.com/blogs/security/zero-trust-architectures-an-aws-perspective/>
 
+### Direct Connect Resiliency Recommendations <a id='article-dx-resiliency'/>
+> <https://aws.amazon.com/directconnect/resiliency-recommendation/>
+
 ## AWS Premium Support Knowledge Base
 
 #### What S3 bucket policy should I use to comply with the AWS Config rule s3-bucket-ssl-requests-only? <a id='kb-s3-ssl'/>
 > <https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-policy-for-config-rule/>
+
+
+## Fundamentals
+
+### Networking
+
+#### Equal-Cost Multi-Path Routing (ECMP) <a id='wiki-ecmp'/>
+> <https://en.wikipedia.org/wiki/Equal-cost_multi-path_routing>
