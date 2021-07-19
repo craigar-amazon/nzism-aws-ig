@@ -717,7 +717,7 @@ The following table shows all the Transit Gateway attachments.
 | `VPN-1`       | VPN  | Customer Gateway for Data Centre `North`
 | `VPN-2`       | VPN  | Customer Gateway for Data Centre `South`
 
-**(07)**: The Transit Gateway contains three route tables; `Egress`, `DC`, and `App`. The `Egress` route table receives IP packets from the `Inspection` VPC, and forwards them to VPCs `X` and `Y`, or on-premises prefixes automated propagated by BGP sessions over `VPN-1` or `VPN-2`. The `DC` route table receives packets from on-premises systems over VPN associations, the forwards them to the `Inspection` VPC based on a summarised static route. The `App` route table can be configured so that traffic is unconditionally forwarded to the `Inspection` VPC (North-South and East-West), or so that traffic flowing between VPCs `X` and `Y` bypasses the `Inspection` VPC. These three route tables are defined below.
+**(07)**: The Transit Gateway contains three route tables; `Egress`, `DC`, and `App`. The `Egress` route table receives IP packets from the `Inspection` VPC, and forwards them to VPCs `X` and `Y`, or on-premises prefixes automated propagated by BGP sessions over `VPN-1` or `VPN-2`. The `DC` route table receives packets from on-premises systems over VPN associations, the forwards them to the `Inspection` VPC based on a summarised static route. The `App` route table can be configured so that traffic is unconditionally forwarded to the `Inspection` VPC (North-South and East-West), or so that traffic flowing between VPCs `X` and `Y` bypasses the `Inspection` VPC. These three route tables are defined below. Note that a single Transit Gateway can support a mix of EAST-West inspection for some lower-trust VPCs, alongside communities of high-trust VPCs bypassing inspection. 
 
 #### TGW Route Tables
 | Name       |East-West | Associations      | Propagations               | Static Routes
@@ -726,6 +726,9 @@ The following table shows all the Transit Gateway attachments.
 |            | No       | `X`, `Y`          | `X`, `Y`                   | 0.0.0.0/0 → `Inspection`
 | `DC`       | -        | `VPN-1`, `VPN-2`  | -                          | 10.0.0.0/24 → `Inspection`
 | `Egress`   | -        | `Inspection`      | `X`, `Y`, `VPN-1`, `VPN-2` | -
+
+
+**(08)**: When resources such as EC2 instances or Lambda functions running in the `Xapp-a` subnet (of VPC `X`) need to connect to on-premises systems, or resources in VPC `Y`, the `Xapp` VPC route table (associated with the `Xapp-a` subnet) determines the next hop. The `Xapp-a` route table includes a default rule that forwards all non-local packets to the Transit Gateway - via the `Xattach-a` Transit Gateway network interface. The `Xapp-b` subnet is associated with the same `Xapp` VPC route table, but attaches through `Xattach-b`.
 
 
 #### VPC Route Tables
