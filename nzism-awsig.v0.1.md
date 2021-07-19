@@ -661,8 +661,6 @@ Application SDLC AWS accounts create and own the compute, database, analytics, a
 This delegation of responsibilities is enforced by a [Service Control Policy (SCP)](#ug-scp) which denies VPC egress configuration permission to application SDLC accounts. To facilitate this, application SDLC accounts are linked to an *Application OU*, while the Production Networks Account is linked to an *Infrastructure OU*.
 
 
-
-
 ### Virtual Firewall Appliances
 Firewall appliance products can be selected from AWS Marketplace. Examples include:
 * [Check Point](#partner-checkpoint-firewall)
@@ -677,6 +675,10 @@ Transit Gateway supports [Equal-Cost Multi-Path (ECMP)](#wiki-ecmp) on VPN attac
 
 Refer to the [Building a Scalable and Secure Multi-VPC AWS Network Infrastructure](#wp-multi-vpc-networking) for details.
 
+### Gateway Load Balancer
+Gateway Load Balancers enable you to deploy, scale, and manage virtual appliances, such as firewalls, intrusion detection and prevention systems, and deep packet inspection systems. It combines a transparent network gateway (that is, a single entry and exit point for all traffic) and distributes traffic while scaling your virtual appliances with the demand.
+
+A Gateway Load Balancer operates at the third layer of the Open Systems Interconnection (OSI) model, the network layer. It listens for all IP packets across all ports and forwards traffic to the target group that's specified in the listener rule. It maintains stickiness of flows to a specific target appliance using 5-tuple (for TCP/UDP flows) or 3-tuple (for non-TCP/UDP flows). The Gateway Load Balancer and its registered virtual appliance instances exchange application traffic using the GENEVE protocol (on port 6081).
 
 
 ## Example
@@ -685,16 +687,12 @@ The following figure illustrates a sample environment with two application accou
 
 **(01)**: The Production Networks Account owns all production VPCs. In this environment, there are three VPCs: `X`, `Y` and `Inspection`.
 
-**(02)**: VPC `X` spans two availability zones; `AZ a` and `AZ b`. Availability zone `AZ a` contains two subnets; `Xapp-a` and `Xattach-a`. Availability zone `AZ b` also contains two corresponding subnets. 
+**(02)**: There are two on-premises data centres, `North` and `South`, each equipped with a hardware router and VPN device. The `North` VPN device initiates two IPsec tunnels. Each tunnel terminates on a public IP of the `VPN-1` Transit Gateway attachment. The `South` device initiates the `VPN-2` tunnels.
 
-
-
-
-
-
-### Implementation Example
+**(03)**: The IPsec tunnel public IPs provisioned by the Transit Gateway are advertised to both data centres over Direct Connect Public VIFs, and ISPs, via a BGP peering.
 
 #### Networks
+For illustration purposes, this example uses the following networks and CIDR ranges.
 | Network             | CIDR
 |---------------------|----------------
 | VPC `X`             | 10.0.0.0/25
@@ -703,8 +701,14 @@ The following figure illustrates a sample environment with two application accou
 | Data Centre `North` | 172.16.0.0/17
 | Data Centre `South` | 172.16.128.0/17
 
+**(04)**: VPC `X` spans two availability zones; `AZ a` and `AZ b`. Availability zone `AZ a` contains two subnets; `Xapp-a` and `Xattach-a`. Availability zone `AZ b` also contains two corresponding subnets. 
+
+**(05)**: Subnets `Xattach-a` and `Xattach-b` are reserved for Transit Gateway attachment. When VPC `X` is attached to the Transit Gateway (TGW), the TGW provisions two network interfaces; one in each subnet. VPC `Y` is attached to the TGW in the same way.
+
+**(06)**: The `Inspection` VPC is attached to the Transit Gateway using dedicated subnets `Attach-a` and `Attach-b`.
 
 #### TGW Attachments
+The following table shows all the Transit Gateway attachments.
 | Name          | Type | Attachment Points 
 |---------------|------|-------------------------------------
 | `X`           | VPC  | Subnets: `Xattach-a`, `Xattach-b`
@@ -713,6 +717,7 @@ The following figure illustrates a sample environment with two application accou
 | `VPN-1`       | VPN  | Customer Gateway for Data Centre `North`
 | `VPN-2`       | VPN  | Customer Gateway for Data Centre `South`
 
+**(07)**: The Transit Gateway contains three route tables; `Egress`, `DC`, and `App`. The `Egress` route table receives IP packets from the `Inspection` VPC, and forwards them to VPCs `X` and `Y`, or on-premises prefixes automated propagated by BGP sessions over `VPN-1` or `VPN-2`. The `DC` route table receives packets from on-premises systems over VPN associations, the forwards them to the `Inspection` VPC based on a summarised static route. The `App` route table can be configured so that traffic is unconditionally forwarded to the `Inspection` VPC (North-South and East-West), or so that traffic flowing between VPCs `X` and `Y` bypasses the `Inspection` VPC. These three route tables are defined below.
 
 #### TGW Route Tables
 | Name       |East-West | Associations      | Propagations               | Static Routes
@@ -1693,356 +1698,356 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ### *Compute*
 
-### Amazon EC2 <a id='ug-ec2'/>
+#### Amazon EC2 <a id='ug-ec2'/>
 > <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html>
 
-#### Amazon Machine Images(AMI) <a id='ug-ec2-ami'/>
+##### Amazon Machine Images(AMI) <a id='ug-ec2-ami'/>
 > <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html>
 
-#### EBS Encryption <a id='ug-ecs-ebs-encryption'/>
+##### EBS Encryption <a id='ug-ecs-ebs-encryption'/>
 > <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html>
 
-### Amazon EC2 Image Builder <a id='ug-ec2-image-builder'/>
+#### Amazon EC2 Image Builder <a id='ug-ec2-image-builder'/>
 > <https://docs.aws.amazon.com/imagebuilder/latest/userguide/what-is-image-builder.html>
 
-### AWS Lambda <a id='ug-lambda'/>
+#### AWS Lambda <a id='ug-lambda'/>
 > <https://docs.aws.amazon.com/lambda/latest/dg/welcome.html>
 
-### AWS Outposts <a id='ug-outposts'/>
+#### AWS Outposts <a id='ug-outposts'/>
 > <https://docs.aws.amazon.com/outposts/latest/userguide/what-is-outposts.html>
 
-#### Local connectivity <a id='ug-outposts-connectivity-local'/>
+##### Local connectivity <a id='ug-outposts-connectivity-local'/>
 > <https://docs.aws.amazon.com/outposts/latest/userguide/local-network-connectivity.html>
 
-#### Region connectivity <a id='ug-outposts-connectivity-region'/>
+##### Region connectivity <a id='ug-outposts-connectivity-region'/>
 > <https://docs.aws.amazon.com/outposts/latest/userguide/region-connectivity.html>
 
-#### Site Requirements <a id='ug-outposts-site-requirements'/>
+##### Site Requirements <a id='ug-outposts-site-requirements'/>
 > <https://docs.aws.amazon.com/outposts/latest/userguide/outposts-requirements.html#facility-networking>
 
 ### *Containers*
 
-### Amazon ECR <a id='ug-ecr'/>
+#### Amazon ECR <a id='ug-ecr'/>
 > <https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html>
 
-#### Image Scanning <a id='ug-ecr-image-scanning'/>
+##### Image Scanning <a id='ug-ecr-image-scanning'/>
 > <https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html>
 
-### Amazon ECS <a id='ug-ecs'/>
+#### Amazon ECS <a id='ug-ecs'/>
 > <https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html>
 
 ### *Storage*
 
-### Amazon S3 <a id='ug-s3'/>
+#### Amazon S3 <a id='ug-s3'/>
 > <https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html>
 
-#### Bucket Policies <a id='ug-s3-bucket-policies'/>
+##### Bucket Policies <a id='ug-s3-bucket-policies'/>
 > <https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-policies.html>
 
-#### Default Bucket Encryption <a id='ug-s3-default-encryption'/>
+##### Default Bucket Encryption <a id='ug-s3-default-encryption'/>
 > <https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-encryption.html>
 
-#### Lifecycle Management <a id='ug-s3-lifecycle'/>
+##### Lifecycle Management <a id='ug-s3-lifecycle'/>
 > <https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html>
 
-#### Replication <a id='ug-s3-replication'/>
+##### Replication <a id='ug-s3-replication'/>
 > <https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication.html>
 
 ### *Database*
 
-### Amazon DynamoDB <a id='ug-dynamo'/>
+#### Amazon DynamoDB <a id='ug-dynamo'/>
 > <https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html>
 
-### Amazon RDS <a id='ug-rds'/>
+#### Amazon RDS <a id='ug-rds'/>
 > <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html>
 
-#### Read Replicas <a id='ug-rds-readreplicas'/>
+##### Read Replicas <a id='ug-rds-readreplicas'/>
 > <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html>
 
-### Amazon Aurora <a id='ug-aurora'/>
+#### Amazon Aurora <a id='ug-aurora'/>
 > <https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html>
 
-#### Global Databases <a id='ug-aurora-global'/>
+##### Global Databases <a id='ug-aurora-global'/>
 > <https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html>
 
 ### *Security, Identity, and Compliance*
 
-### AWS Identity and Access Management <a id='ug-iam'/>
+#### AWS Identity and Access Management <a id='ug-iam'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html>
 
-#### ABAC <a id='ug-iam-abac'/>
+##### ABAC <a id='ug-iam-abac'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_attribute-based-access-control.html>
 
-#### Policies <a id='ug-iam-policy'/>
+##### Policies <a id='ug-iam-policy'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_access-management.html>
 
-### AWS Firewall Manager <a id='ug-firewall-manager'/>
+#### AWS Firewall Manager <a id='ug-firewall-manager'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/fms-chapter.html>
 
-### Amazon GuardDuty <a id='ug-guardduty'/>
+#### Amazon GuardDuty <a id='ug-guardduty'/>
 > <https://docs.aws.amazon.com/guardduty/latest/ug/what-is-guardduty.html>
 
-#### Finding Types <a id='ug-guardduty-finding-types'/>
+##### Finding Types <a id='ug-guardduty-finding-types'/>
 > <https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_finding-types-s3.html>
 
-### Amazon Inspector <a id='ug-inspector'/>
+#### Amazon Inspector <a id='ug-inspector'/>
 > <https://docs.aws.amazon.com/inspector/latest/userguide/inspector_introduction.html>
 
-### Amazon Macie <a id='ug-macie'/>
+#### Amazon Macie <a id='ug-macie'/>
 > <https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html>
 
-### AWS Network Firewall <a id='ug-network-firewall'/>
+#### AWS Network Firewall <a id='ug-network-firewall'/>
 > <https://docs.aws.amazon.com/network-firewall/latest/developerguide/what-is-aws-network-firewall.html>
 
-#### Suricata Rule Groups <a id='ug-network-firewall-suricata'/>
+##### Suricata Rule Groups <a id='ug-network-firewall-suricata'/>
 > <https://docs.aws.amazon.com/network-firewall/latest/developerguide/stateful-rule-groups-ips.html>
 
-### AWS Resource Access Manager <a id='ug-ram'/>
+#### AWS Resource Access Manager <a id='ug-ram'/>
 > <https://docs.aws.amazon.com/ram/latest/userguide/what-is.html>
 
-### AWS Resource Groups <a id='ug-resource-groups'/>
+#### AWS Resource Groups <a id='ug-resource-groups'/>
 > <https://docs.aws.amazon.com/ARG/latest/userguide/welcome.html>
 
-#### Tag Editor <a id='ug-tag-editor'/>
+##### Tag Editor <a id='ug-tag-editor'/>
 > <https://docs.aws.amazon.com/ARG/latest/userguide/tag-editor.html>
 
-### AWS Shield <a id='ug-shield'/>
+#### AWS Shield <a id='ug-shield'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/shield-chapter.html>
 
-#### Shield Advanced Resource Protections <a id='ug-shield-advanced-resource-protections'/>
+##### Shield Advanced Resource Protections <a id='ug-shield-advanced-resource-protections'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/ddos-manage-protected-resources.html>
 
-### AWS WAF <a id='ug-waf'/>
+#### AWS WAF <a id='ug-waf'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html>
 
-#### DDoS Protection <a id='ug-waf-ddos-protection'/>
+##### DDoS Protection <a id='ug-waf-ddos-protection'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/ddos-responding.html>
 
-#### Managed Rule Groups <a id='ug-waf-managed-rules'/>
+##### Managed Rule Groups <a id='ug-waf-managed-rules'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/waf-managed-rule-groups.html>
 
 
 ### *Cryptography and PKI*
 
-### AWS CloudHSM <a id='ug-hsm'/>
+#### AWS CloudHSM <a id='ug-hsm'/>
 > <https://docs.aws.amazon.com/cloudhsm/latest/userguide/introduction.html>
 
-### AWS KMS <a id='ug-kms'/>
+#### AWS KMS <a id='ug-kms'/>
 > <https://docs.aws.amazon.com/kms/latest/developerguide/overview.html>
 
-#### Customer Master Key (CMK) <a id='ug-kms-cmk'/>
+##### Customer Master Key (CMK) <a id='ug-kms-cmk'/>
 > <https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#master_keys>
 
-### AWS Certificate Manager <a id='ug-acm'/>
+#### AWS Certificate Manager <a id='ug-acm'/>
 > <https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html>
 
-### AWS Certificate Manager Private CA <a id='ug-private-ca'/>
+#### AWS Certificate Manager Private CA <a id='ug-private-ca'/>
 > <https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaWelcome.html>
 
-### AWS Signer <a id='ug-signer'/>
+#### AWS Signer <a id='ug-signer'/>
 > <https://docs.aws.amazon.com/signer/latest/developerguide/Welcome.html>
 
 ### *Management and Governance*
 
-### AWS Autoscaling
+#### AWS Autoscaling
 
 #### EC2 Autoscaling <a id='ug-as-ec2'/>
 > <https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html>
 
-#### Predictive Autoscaling <a id='ug-as-ec2-predictive'/>
+##### Predictive Autoscaling <a id='ug-as-ec2-predictive'/>
 > <https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-predictive-scaling.html>
 
-### AWS CloudFormation <a id='ug-cloudformation'/>
+#### AWS CloudFormation <a id='ug-cloudformation'/>
 > <https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html>
 
-### AWS CloudTrail <a id='ug-cloudtrail'/>
+#### AWS CloudTrail <a id='ug-cloudtrail'/>
 > <https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html>
 
-### Amazon CloudWatch <a id='ug-cw'/>
+#### Amazon CloudWatch <a id='ug-cw'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html>
 
-#### Synthetic Monitoring <a id='ug-cw-synthetic'/>
+##### Synthetic Monitoring <a id='ug-cw-synthetic'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries.html>
 
-#### CloudWatch Logs <a id='ug-cwl'/>
+##### CloudWatch Logs <a id='ug-cwl'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html>
 
-#### CloudWatch Logs Insights <a id='ug-cwl-insights'/>
+##### CloudWatch Logs Insights <a id='ug-cwl-insights'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html>
 
-#### CloudWatch Events <a id='ug-cwe'/>
+##### CloudWatch Events <a id='ug-cwe'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/WhatIsCloudWatchEvents.html>
 
-### AWS Config <a id='ug-config'/>
+#### AWS Config <a id='ug-config'/>
 > <https://docs.aws.amazon.com/config/latest/developerguide/WhatIsConfig.html>
 
-#### Managed Rules <a id='ug-config-managed-rules'/>
+##### Managed Rules <a id='ug-config-managed-rules'/>
 > <https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html>
 
-### AWS Health <a id='ug-health'/>
+#### AWS Health <a id='ug-health'/>
 > <https://docs.aws.amazon.com/health/latest/ug/what-is-aws-health.html>
 
-### AWS Systems Manager <a id='ug-systems-manager'/>
+#### AWS Systems Manager <a id='ug-systems-manager'/>
 > <https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html>
 
-### Patch Manager <a id='ug-patch-manager'/>
+#### Patch Manager <a id='ug-patch-manager'/>
 > <https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-patch.html>
 
-### Session Manager <a id='ug-session-manager'/>
+#### Session Manager <a id='ug-session-manager'/>
 > <https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html>
 
-### Automation <a id='ug-automation'/>
+#### Automation <a id='ug-automation'/>
 > <https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation.html>
 
-### AWS Organizations <a id='ug-organizations'/>
+#### AWS Organizations <a id='ug-organizations'/>
 > <https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html>
 
-#### Accounts <a id='ug-accounts'/>
+##### Accounts <a id='ug-accounts'/>
 > <https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_create.html>
 
-#### Service Control Policies <a id='ug-scp'/>
+##### Service Control Policies <a id='ug-scp'/>
 > <https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html>
 
-#### Tag Policies <a id='ug-tag-policies'/>
+##### Tag Policies <a id='ug-tag-policies'/>
 > <https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html>
 
 ### *Developer Tools*
 
-### AWS CodePipeline <a id='ug-codepipeline'/>
+#### AWS CodePipeline <a id='ug-codepipeline'/>
 > <https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html>
 
-### AWS X-Ray <a id='ug-xray'/>
+#### AWS X-Ray <a id='ug-xray'/>
 > <https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html>
 
 ### *Networking and Content Delivery*
 
-### Amazon API Gateway <a id='ug-apig'/>
+#### Amazon API Gateway <a id='ug-apig'/>
 > <https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html>
 
-### Amazon CloudFront <a id='ug-cloudfront'/>
+#### Amazon CloudFront <a id='ug-cloudfront'/>
 > <https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html>
 
-#### Requiring HTTPS Viewers <a id='ug-cloudfront-require-https-viewers'/>
+##### Requiring HTTPS Viewers <a id='ug-cloudfront-require-https-viewers'/>
 > <https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-viewers-to-cloudfront.html>
 
-### Amazon Direct Connect <a id='ug-dx'/>
+#### Amazon Direct Connect <a id='ug-dx'/>
 > <https://docs.aws.amazon.com/directconnect/latest/UserGuide/Welcome.html>
 
-#### Dedicated Port Connections <a id='ug-dx-cx-dedicated'/>
+##### Dedicated Port Connections <a id='ug-dx-cx-dedicated'/>
 > <https://docs.aws.amazon.com/directconnect/latest/UserGuide/create-connection.html>
 
-#### Hosted Connections <a id='ug-dx-cx-hosted'/>
+##### Hosted Connections <a id='ug-dx-cx-hosted'/>
 > <https://docs.aws.amazon.com/directconnect/latest/UserGuide/accept-hosted-connection.html>
 
-#### Virtual Interfaces <a id='ug-dx-vif'/>
+##### Virtual Interfaces <a id='ug-dx-vif'/>
 > <https://docs.aws.amazon.com/directconnect/latest/UserGuide/create-vif.html>
 
-### Elastic Load Balancing <a id='ug-lb'/>
+#### Elastic Load Balancing <a id='ug-lb'/>
 
-### Application Load Balancer <a id='ug-alb'/>
+#### Application Load Balancer <a id='ug-alb'/>
 > <https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html>
 
-#### Redirect actions <a id='ug-alb-redirects'/>
+##### Redirect actions <a id='ug-alb-redirects'/>
 > <https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html#redirect-actions>
 
-### Network Load Balancer <a id='ug-nlb'/>
+##### Network Load Balancer <a id='ug-nlb'/>
 > <https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html>
 
-### Gateway Load Balancer <a id='ug-gwlb'/>
+#### Gateway Load Balancer <a id='ug-gwlb'/>
 > <https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/introduction.html>
 
-### AWS Global Accelerator <a id='ug-ga'/>
+#### AWS Global Accelerator <a id='ug-ga'/>
 > <https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html>
 
-### Amazon Route53 <a id='ug-route53'/>
+#### Amazon Route53 <a id='ug-route53'/>
 > <https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html>
 
-### Amazon Transit Gateway <a id='ug-tgw'/>
+#### Amazon Transit Gateway <a id='ug-tgw'/>
 > <https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html>
 
-### Amazon VPC <a id='ug-vpc'/>
+#### Amazon VPC <a id='ug-vpc'/>
 > <https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html>
 
-#### Security Groups <a id='ug-vpc-security-groups'/>
+##### Security Groups <a id='ug-vpc-security-groups'/>
 > <https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html>
 
-#### Internet Gateways <a id='ug-vpc-igw'/>
+##### Internet Gateways <a id='ug-vpc-igw'/>
 > <https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html>
 
-#### VPC Endpoints <a id='ug-vpc-endpoints'/>
+##### VPC Endpoints <a id='ug-vpc-endpoints'/>
 > <https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints.html>
 
-#### PrivateLink <a id='ug-vpc-privatelink'/>
+##### PrivateLink <a id='ug-vpc-privatelink'/>
 > <https://docs.aws.amazon.com/vpc/latest/privatelink/endpoint-service.html>
 
-#### Peering <a id='ug-vpc-peering'/>
+##### Peering <a id='ug-vpc-peering'/>
 > <https://docs.aws.amazon.com/vpc/latest/userguide/vpc-peering.html>
 
-#### VPC Flow Logs <a id='ug-vpc-flow-logs'/>
+##### VPC Flow Logs <a id='ug-vpc-flow-logs'/>
 > <https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html>
 
-### AWS VPN - Client <a id='ug-vpn-client'/>
+#### AWS VPN - Client <a id='ug-vpn-client'/>
 > <https://docs.aws.amazon.com/vpn/latest/clientvpn-user/client-vpn-user-what-is.html>
 
-### AWS VPN - Site-to-Site <a id='ug-vpn-s2s'/>
+#### AWS VPN - Site-to-Site <a id='ug-vpn-s2s'/>
 > <https://docs.aws.amazon.com/vpn/latest/s2svpn/VPC_VPN.html>
 
 
 ### *Application Integration*
 
-### Amazon EventBridge <a id='ug-eventbridge'/>
+#### Amazon EventBridge <a id='ug-eventbridge'/>
 > <https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html>
 
-### Amazon SNS <a id='ug-sns'/>
+#### Amazon SNS <a id='ug-sns'/>
 > <https://docs.aws.amazon.com/sns/latest/dg/welcome.html>
 
-### Amazon SQS <a id='ug-sqs'/>
+#### Amazon SQS <a id='ug-sqs'/>
 > <https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html>
 
 ## AWS FAQ
 
 ### *Compliance*
 
-### Data Privacy <a id='faq-data-privacy'/>
+#### Data Privacy <a id='faq-data-privacy'/>
 > <https://aws.amazon.com/compliance/data-privacy-faq/>
 
 ### *Compute*
 
-### Amazon EC2 <a id='faq-ec2'/>
+#### Amazon EC2 <a id='faq-ec2'/>
 > <http://aws.amazon.com/ec2/faqs/>
 
-### Amazon EC2 Image Builder <a id='faq-ec2-image-builder'/>
+#### Amazon EC2 Image Builder <a id='faq-ec2-image-builder'/>
 > <https://aws.amazon.com/image-builder/faqs/>
 
-### AWS Lambda <a id='faq-lambda'/>
+#### AWS Lambda <a id='faq-lambda'/>
 > <https://aws.amazon.com/lambda/faqs/>
 
-### AWS Outposts <a id='faq-outposts'/>
+#### AWS Outposts <a id='faq-outposts'/>
 > <http://aws.amazon.com/outposts/faqs/>
 
 ### *Containers*
 
-### Amazon ECS <a id='faq-ecs'/>
+#### Amazon ECS <a id='faq-ecs'/>
 > <https://aws.amazon.com/ecs/faqs/>
 
 ### *Storage*
 
-### AWS Snow Family <a id='faq-snow'/>
+#### AWS Snow Family <a id='faq-snow'/>
 > <https://aws.amazon.com/snow/faqs/>
 
 ### *Database*
 
-### Amazon RDS <a id='faq-rds'/>
+#### Amazon RDS <a id='faq-rds'/>
 > <https://aws.amazon.com/rds/faqs/>
 
 ### *Security, Identity, and Compliance*
 
-### Amazon Inspector <a id='faq-inspector'/>
+#### Amazon Inspector <a id='faq-inspector'/>
 > <https://aws.amazon.com/inspector/faqs/>
 
 ### *Analytics*
 
-### Amazon Elasticsearch <a id='faq-elasticsearch'/>
+#### Amazon Elasticsearch <a id='faq-elasticsearch'/>
 > <https://aws.amazon.com/elasticsearch-service/faqs/>
 
 
@@ -2132,6 +2137,7 @@ You can use AWS WAF to create custom, application-specific rules that block atta
 
 ### Direct Connect Resiliency Recommendations <a id='article-dx-resiliency'/>
 > <https://aws.amazon.com/directconnect/resiliency-recommendation/>
+
 
 ## AWS Premium Support Knowledge Base
 
