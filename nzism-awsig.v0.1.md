@@ -642,9 +642,31 @@ You should consider this pattern if you have multiple product teams, each managi
 * Layer 7 inspection of Internet ingress traffic to [load balancers](#ug-lb),
 * Layer 7 inspection of Internet ingress traffic to EC2 instances.
 
+## Definitions
+This pattern is intended to be mostly agnostic regarding the [Organizations OU](#ug-organizations) and AWS account structure, apart from a requirement for an *Infrastructure* OU and a *Production Networks Account*. Reflecting this, the pattern refers to *Application-SDLC* OUs and AWS Accounts.
+
+> For example, suppose you have three product teams; `CRM`, `HR`, and `Research`. You could organise your development lifecycle (SDLC) Production and UAT accounts in a flat OU structure like this:
+> * OU `App-Prod`:
+>  * Accounts: `CRM-Prod`, `HR-Prod`, `Research-Prod`
+> * OU `App-UAT`:
+>  * Accounts: `CRM-UAT`, `HR-UAT`, `Research-UAT`
+>
+> Or if your landing zone pattern supports it, you organise your accounts and SDLC OUs into functional/regional business units like this:
+> * OU `Corporate`:
+>   * OU `Corporate-Prod`:
+>     * Accounts: `HR-Prod`, `Research-Prod`
+>   * OU `Corporate-UAT`:
+>     * Accounts: `HR-UAT`, `Research-UAT`
+> * OU `Engagement`:
+>   * OU `Engagement-Prod`:
+>     * Accounts: `CRM-Prod`
+>   * OU `Engagement-UAT`:
+>     * Accounts: `CRM-UAT`
+
 
 ## Input Parameters for Pattern
-* VPC requirements for each application AWS account, including whether East-West inspection is required, and whether Internet-facing resources such as load balancers are required,
+* Mapping of application and SDLC phases to AWS OUs and accounts,
+* VPC requirements for each application SDLC AWS account, including whether Layer 7 East-West inspection is required, and whether Internet-facing resources such as load balancers are required,
 * On-premises customer gateway configurations for [site-to-site VPNs](#ug-vpn-s2s),
 * Firewall appliance configurations and rule sets.
 
@@ -652,7 +674,7 @@ You should consider this pattern if you have multiple product teams, each managi
 ## How It Works
 This pattern uses a [Transit Gateway](#ug-tgw) to route both VPC and VPN traffic through a highly available, auto-scaling cluster of virtual firewall appliances managed by a [Gateway Load Balancer](#ug-gwlb). The Transit Gateway terminates VPN connections from two (or more) on-premises data centres.
 
-The Transit Gateway is the next-hop router for all *application SDLC VPCs*. An application SDLC VPC provides connectivity for the compute, database, analytics, and storage resources associated with one or more line-of-business applications, at a specific phase of the system development lifecycle. Examples of an application SDLC VPC might include: *Patient Portal UAT*, *Payments Production*, or *Case Management Development*.
+The Transit Gateway is the next-hop router for all *application SDLC VPCs*. An application SDLC VPC provides connectivity for the compute, database, analytics, and storage resources associated with one or more line-of-business applications, at a specific phase of the system development lifecycle.
 
 The Transit Gateway is also the next-hop router for the Inspection VPC. All these VPCs, and the Transit Gateway itself, are owned by a single *Production Networks Account*.
 
@@ -676,9 +698,9 @@ Transit Gateway supports [Equal-Cost Multi-Path (ECMP)](#wiki-ecmp) on VPN attac
 Refer to the [Building a Scalable and Secure Multi-VPC AWS Network Infrastructure](#wp-multi-vpc-networking) for details.
 
 ### Gateway Load Balancer
-Gateway Load Balancers enable you to deploy, scale, and manage virtual appliances, such as firewalls, intrusion detection and prevention systems, and deep packet inspection systems. It combines a transparent network gateway (that is, a single entry and exit point for all traffic) and distributes traffic while scaling your virtual appliances with the demand.
+[Gateway Load Balancers](#ug-gwlb) enable you to deploy, scale, and manage virtual appliances, such as firewalls, intrusion detection and prevention systems, and deep packet inspection systems. It combines a transparent network gateway (that is, a single entry and exit point for all traffic) and distributes traffic while scaling your virtual appliances with the demand.
 
-A Gateway Load Balancer operates at the third layer of the Open Systems Interconnection (OSI) model, the network layer. It listens for all IP packets across all ports and forwards traffic to the target group that's specified in the listener rule. It maintains stickiness of flows to a specific target appliance using 5-tuple (for TCP/UDP flows) or 3-tuple (for non-TCP/UDP flows). The Gateway Load Balancer and its registered virtual appliance instances exchange application traffic using the GENEVE protocol (on port 6081).
+A Gateway Load Balancer operates at the third layer of the Open Systems Interconnection (OSI) model, the network layer. It listens for all IP packets across all ports and forwards traffic to the target group that's specified in the listener rule. It maintains stickiness of flows to a specific target appliance using 5-tuple (for TCP/UDP flows) or 3-tuple (for non-TCP/UDP flows). The Gateway Load Balancer and its registered virtual appliance instances exchange application traffic using the [GENEVE](#wiki-geneve) encapsulation protocol (on port 6081).
 
 
 ## Example
@@ -717,7 +739,7 @@ The following table shows all the Transit Gateway attachments.
 | `VPN-1`       | VPN  | Customer Gateway for Data Centre `North`
 | `VPN-2`       | VPN  | Customer Gateway for Data Centre `South`
 
-**(07)**: The Transit Gateway contains three route tables; `Egress`, `DC`, and `App`. The `Egress` route table receives IP packets from the `Inspection` VPC, and forwards them to VPCs `X` and `Y`, or on-premises prefixes automated propagated by BGP sessions over `VPN-1` or `VPN-2`. The `DC` route table receives packets from on-premises systems over VPN associations, the forwards them to the `Inspection` VPC based on a summarised static route. The `App` route table can be configured so that traffic is unconditionally forwarded to the `Inspection` VPC (North-South and East-West), or so that traffic flowing between VPCs `X` and `Y` bypasses the `Inspection` VPC. These three route tables are defined below. Note that a single Transit Gateway can support a mix of EAST-West inspection for some lower-trust VPCs, alongside communities of high-trust VPCs bypassing inspection. 
+**(07)**: The Transit Gateway contains three route tables; `Egress`, `DC`, and `App`. The `Egress` route table receives IP packets from the `Inspection` VPC, and forwards them to VPCs `X` and `Y`, or on-premises prefixes automated propagated by BGP sessions over `VPN-1` or `VPN-2`. The `DC` route table receives packets from on-premises systems over VPN associations, the forwards them to the `Inspection` VPC based on a summarised static route. The `App` route table can be configured so that traffic is unconditionally forwarded to the `Inspection` VPC (North-South and East-West), or so that traffic flowing between VPCs `X` and `Y` bypasses the `Inspection` VPC. These three route tables are defined below.
 
 #### TGW Route Tables
 | Name       |East-West | Associations      | Propagations               | Static Routes
@@ -727,8 +749,13 @@ The following table shows all the Transit Gateway attachments.
 | `DC`       | -        | `VPN-1`, `VPN-2`  | -                          | 10.0.0.0/24 → `Inspection`
 | `Egress`   | -        | `Inspection`      | `X`, `Y`, `VPN-1`, `VPN-2` | -
 
+> Note that a single Transit Gateway can support a mix of Layer 7 East-West inspection for some lower-trust VPCs, alongside communities of high-trust VPCs bypassing Layer 7 inspection. For example, suppose you added VPC `Z` to the design, and had a policy that Layer 7 inspection was required for `X`←→`Z` and `Y`←→`Z`, but not `X`←→`Y`. You could satisfy this requirement using the East-West = No configuration above, then by associating attachment `Z` with the `App` TGW Route Table, and ropagating attachment `Z` into the `Egress` TGW Route Table.
 
-**(08)**: When resources such as EC2 instances or Lambda functions running in the `Xapp-a` subnet (of VPC `X`) need to connect to on-premises systems, or resources in VPC `Y`, the `Xapp` VPC route table (associated with the `Xapp-a` subnet) determines the next hop. The `Xapp-a` route table includes a default rule that forwards all non-local packets to the Transit Gateway - via the `Xattach-a` Transit Gateway network interface. The `Xapp-b` subnet is associated with the same `Xapp` VPC route table, but attaches through `Xattach-b`.
+**(08)**: When resources such as EC2 instances or Lambda functions running in the `Xapp-a` subnet (of VPC `X`) need to connect to on-premises systems, or resources in VPC `Y`, the `Xapp` VPC route table (associated with the `Xapp-a` subnet) determines the next hop. The `Xapp-a` route table includes a default rule that forwards all non-local packets to the Transit Gateway - via the `Xattach-a` Transit Gateway network interface. The `Xapp-b` subnet is also associated with the same `Xapp` VPC route table, but attaches through `Xattach-b`. This same approach is used in VPC `Y` by the `Yapp-a` and `Yapp-b` subnets and `Yapp` VPC route table.
+
+**(09)**: The `Attach-a` subnet is associated with the `Attach-a` VPC route table. This route table forwards all traffic to the Gateway Load Balancer Endpoint `gwlb-a` in the `Appliance-a` subnet. Likewise, the `Attach-a` subnet is associated with the `Attach-b` VPC route table, and forwards to the `gwlb-b` Gateway Load Balancer Endpoint.
+
+
 
 
 #### VPC Route Tables
@@ -2154,3 +2181,7 @@ You can use AWS WAF to create custom, application-specific rules that block atta
 
 #### Equal-Cost Multi-Path Routing (ECMP) <a id='wiki-ecmp'/>
 > <https://en.wikipedia.org/wiki/Equal-cost_multi-path_routing>
+
+
+#### GENEVE <a id='wiki-geneve'/>
+> <https://en.wikipedia.org/wiki/Generic_Network_Virtualization_Encapsulation>
