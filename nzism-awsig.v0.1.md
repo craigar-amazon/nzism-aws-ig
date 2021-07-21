@@ -704,6 +704,7 @@ Firewall appliance products can be selected from AWS Marketplace. Examples inclu
 
 You are responsible for configuring the firewall appliance rules to perform Layer 7 checks and logging. You are also responsible for forwarding firewall logs to any SIEM ingestion end-points. Your selected firewall appliance may support autoscaling via an [EC2 Autoscaling Group](#ug-as-ec2) created when then appliance is installed. You should configure the Autoscaling Group to span multiple subnets, in multiple availability zones, in order to achieve high availability. 
 
+
 ### Direct Connect
 A public virtual interface (VIF) allows you to access all AWS public services and endpoints using their public IP addresses. When you create a VPN attachment on the Transit Gateway, you get two public IP addresses for VPN termination at the AWS end. These public IPs are reachable over the public VIF. You can create as many VPN connections as you want over a Public VIF. When you create a BGP peering over the public VIF, AWS advertises the entire AWS public IP range to your router.
 
@@ -711,10 +712,31 @@ Transit Gateway supports [Equal-Cost Multi-Path (ECMP)](#wiki-ecmp) on VPN attac
 
 Refer to the [Building a Scalable and Secure Multi-VPC AWS Network Infrastructure](#wp-multi-vpc-networking) for details.
 
+
 ### Gateway Load Balancer
 [Gateway Load Balancers](#ug-gwlb) enable you to deploy, scale, and manage virtual appliances, such as firewalls, intrusion detection and prevention systems, and deep packet inspection systems. It combines a transparent network gateway (that is, a single entry and exit point for all traffic) and distributes traffic while scaling your virtual appliances with the demand.
 
 A Gateway Load Balancer operates at the third layer of the Open Systems Interconnection (OSI) model, the network layer. It listens for all IP packets across all ports and forwards traffic to the target group that's specified in the listener rule. It maintains stickiness of flows to a specific target appliance using 5-tuple (for TCP/UDP flows) or 3-tuple (for non-TCP/UDP flows). The Gateway Load Balancer and its registered virtual appliance instances exchange application traffic using the [GENEVE](#wiki-geneve) encapsulation protocol (on port 6081).
+
+
+### VPC Flow Logs
+The Inspection VPC enables [VPC Flow Logs](#ug-vpc-flow-logs). Flow logs capture information about the IP traffic going to and from network interfaces in the VPC.
+
+
+### GuardDuty
+The *Production Networks Account* activates [GuardDuty](#ug-guardduty), and accepts the *Security* account as its delegated administrator. GuardDuty is a continuous security monitoring service that analyses and processes: VPC Flow Logs, CloudTrail management event logs, CloudTrail S3 data event logs, and DNS logs. It uses threat intelligence feeds, such as lists of malicious IP addresses and domains, and machine learning to identify unexpected and potentially unauthorised and malicious activity within the *Production Networks Account*. Examples of such activities include;
+* escalations of privileges,
+* uses of exposed credentials, or
+* communication with malicious IP addresses, or domains
+
+For example, GuardDuty can detect compromised EC2 instances serving malware or mining bitcoin. It also monitors AWS account access behavior for signs of compromise, such as unauthorised infrastructure deployments, instances deployed in a Region that has never been used, or unusual API calls, like a password policy change to reduce password strength. GuardDuty reports these activities by producing security [findings](#ug-guardduty-finding-types) and publishing them as [CloudWatch Events](#ug-cwe). You can view these findings in the *Production Networks Account* GuardDuty console, and security engineers can view aggregated findings across the Organization in the *Security* account.
+
+
+### Application VPCs
+Any [Application Load Balancers](#ug-alb) deployed in the application VPCs should enable [access logging](#ug-alb-logs). Each log contains information such as the time the request was received, the client's IP address, latencies, request paths, and server responses. You can use these access logs to analyse traffic patterns and troubleshoot issues. Logs are stored in your selected S3 bucket as compressed files.
+
+Public application load balancers should also use [WAF](#ug-waf) to allow or block requests based on the rules defined in a [web access control list](#ug-alb-waf).
+
 
 
 ## NZISM Controls Implemented
@@ -852,9 +874,12 @@ The following table summarises preceding outline of VPC security groups:
 |     | `y2`           | TCP 5432 from `y1`         | All to 0.0.0.0/0 |
 
 
-**(19)**: VPCs `X`, `Y`, and `Inspection` have enabled [VPC Flow Logs](#ug-vpc-flow-logs). Flow logs capture information about the IP traffic going to and from network interfaces in these VPCs. VPC `X` has configured a flow log that publishes *Accept* traffic to [CloudWatch Logs](#ug-cwl). VPC `Y` has configured a flow log that publishes *Accept* and *Reject* traffic to S3. The `Inspaction` VPC has configured two flow logs; the first publishes *Accept* traffic to CloudWatch Logs, while the second publishes *Accept* and *Reject* traffic to S3. Flow logs persisted to S3 are ingested into a SIEM. 
+**(19)**: VPCs `X`, `Y`, and `Inspection` have enabled [VPC Flow Logs](#ug-vpc-flow-logs). VPC `X` has configured a flow log that publishes *Accept* traffic to [CloudWatch Logs](#ug-cwl). VPC `Y` has configured a flow log that publishes *Accept* and *Reject* traffic to S3. The `Inspaction` VPC has configured two flow logs; the first publishes *Accept* traffic to CloudWatch Logs, while the second publishes *Accept* and *Reject* traffic to S3. Flow logs persisted to S3 are ingested into a SIEM. 
 
-**(20)**: The *Production Networks Account* has activated [GuardDuty](#ug-guardduty), and accepted the *Security* account as its delegated administrator. GuardDuty is a continuous security monitoring service that analyses and processes: VPC Flow Logs, CloudTrail management event logs, CloudTrail S3 data event logs, and DNS logs. It uses threat intelligence feeds, such as lists of malicious IP addresses and domains, and machine learning to identify unexpected and potentially unauthorised and malicious activity within the *Production Networks Account*. Examples of such activities include; escalations of privileges, uses of exposed credentials, or communication with malicious IP addresses, or domains. For example, GuardDuty can detect compromised EC2 instances serving malware or mining bitcoin. It also monitors AWS account access behavior for signs of compromise, such as unauthorised infrastructure deployments, instances deployed in a Region that has never been used, or unusual API calls, like a password policy change to reduce password strength. GuardDuty reports these activities by producing security [findings](#ug-guardduty-finding-types) and publishing them as [CloudWatch Events](#ug-cwe). You can view these findings in the *Production Networks Account* GuardDuty console, and security engineers can view aggregated findings across the Organization in the *Security* account.
+**(20)**: The *Production Networks Account* has activated GuardDuty and accepted the *Security* account as its delegated administrator.
+
+**(21)**: The Application Load Balancer in subnets `Yalb-a` and `Yalb-b` has enabled access logging, and has attached a web access control list (web ACL).
+
 
 ---
 # **AWS Security Recommendations**
@@ -2105,8 +2130,14 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### Application Load Balancer <a id='ug-alb'/>
 > <https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html>
 
+##### Access logs <a id='ug-alb-logs'/>
+> <https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html>
+
 ##### Redirect actions <a id='ug-alb-redirects'/>
 > <https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html#redirect-actions>
+
+##### WAF <a id='ug-alb-waf'/>
+> <https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html>
 
 ##### Network Load Balancer <a id='ug-nlb'/>
 > <https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html>
