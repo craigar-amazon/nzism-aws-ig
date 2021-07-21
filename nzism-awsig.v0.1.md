@@ -1582,7 +1582,7 @@ NZISM CID | Control | Paragraph | Objective | Section |
 Checks if Web Application Firewall (WAF) is enabled on Application Load Balancers (ALBs). This rule is NON_COMPLIANT if key: waf.enabled is set to false.
 > <https://docs.aws.amazon.com/config/latest/developerguide/alb-waf-enabled.html>
 
-### Resources In Scope
+##### Resources In Scope
 * [Application Load Balancer](#ug-alb)
 
 
@@ -1591,7 +1591,7 @@ Checks if Web Application Firewall (WAF) is enabled on Application Load Balancer
 Checks if your EC2 instances belong to a virtual private cloud (VPC). Optionally, you can specify the `vpcId` parameter to associate with your instances.
 > <https://docs.aws.amazon.com/config/latest/developerguide/ec2-instances-in-vpc.html>
 
-### Resources In Scope
+##### Resources In Scope
 * [EC2 Instances](#ug-ec2)
 
 
@@ -1600,7 +1600,7 @@ Checks if your EC2 instances belong to a virtual private cloud (VPC). Optionally
 Checks whether Amazon Elastic Compute Cloud (Amazon EC2) instances have a public IP association. The rule is NON_COMPLIANT if the publicIp field is present in the Amazon EC2 instance configuration item. This rule applies only to IPv4.
 > <https://docs.aws.amazon.com/config/latest/developerguide/ec2-instance-no-public-ip.html>
 
-### Resources In Scope
+##### Resources In Scope
 * [EC2 Instances](#ug-ec2)
 
 
@@ -1609,7 +1609,7 @@ Checks whether Amazon Elastic Compute Cloud (Amazon EC2) instances have a public
 Checks if the Application Load Balancer and the Classic Load Balancer have logging enabled. The rule is NON_COMPLIANT if the access_logs.s3.enabled is false or access_logs.S3.bucket is not equal to the `s3BucketName` parameter that you provided.
 > <https://docs.aws.amazon.com/config/latest/developerguide/elb-logging-enabled.html>
 
-### Resources In Scope
+##### Resources In Scope
 * [Load Balancer](#ug-lb)
 
 
@@ -1636,10 +1636,10 @@ Checks whether storage encryption is enabled for your RDS DB instances.
 Checks if Amazon S3 buckets have policies that require requests to use Secure Socket Layer (SSL). The rule is COMPLIANT if buckets explicitly deny access to HTTP requests. The rule is NON_COMPLIANT if bucket policies allow HTTP requests.
 > <https://docs.aws.amazon.com/config/latest/developerguide/s3-bucket-ssl-requests-only.html>
 
-### Resources In Scope
+##### Resources In Scope
 * [S3 Buckets](#ug-s3)
 
-### Compliance Guide
+#### Compliance Guide
 You should use [S3 bucket policies](#ug-s3-bucket-policies) to comply with this rule.
 
 Amazon S3 offers encryption in transit and encryption at rest. Encryption in transit refers to HTTPS. Encryption at rest refers to client-side or server-side encryption.
@@ -1687,7 +1687,7 @@ Checks whether the Amazon S3 buckets are encrypted with AWS Key Management Servi
 Checks that the default security group of any Amazon Virtual Private Cloud (VPC) does not allow inbound or outbound traffic. The rule returns NOT_APPLICABLE if the security group is not default. The rule is NON_COMPLIANT if the default security group has one or more inbound or outbound traffic rules.
 > <https://docs.aws.amazon.com/config/latest/developerguide/vpc-default-security-group-closed.html>
 
-### Resources In Scope
+##### Resources In Scope
 * [VPC Security Groups](#ug-vpc-security-groups)
 
 
@@ -1723,7 +1723,7 @@ Checks whether logging is enabled on AWS Web Application Firewall (WAFV2) region
 > <https://www.legislation.govt.nz/act/public/2020/0031/latest/LMS23223.html>
 
 ### GCDO Security Documents For AWS
-The GCDO can provide security certification documents for AWS infrastructure services (such as EC2, EBS, S3, VPC, and Direct Connect), upon request. The documents include:
+The GCDO can provide security certification documents for AWS infrastructure services upon request. AWS infrastructure services include EC2, EBS, S3, VPC, and Direct Connect. The security certification documents include:
 * a Risk Assessment
 * a Service Security Certificate
 * an Independent Audit Report
