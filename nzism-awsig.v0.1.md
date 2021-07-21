@@ -669,6 +669,7 @@ This pattern is intended to be mostly agnostic regarding the [Organizations OU](
 * VPC requirements for each application SDLC AWS account, including whether Layer 7 East-West inspection is required, and whether Internet-facing resources such as load balancers are required,
 * On-premises customer gateway configurations for [site-to-site VPNs](#ug-vpn-s2s),
 * Firewall appliance configurations and rule sets.
+* Firewall log handling policies and SIEM integration.
 
 
 ## How It Works
@@ -678,7 +679,9 @@ The Transit Gateway is the next-hop router for all *application SDLC VPCs*. An a
 
 The Transit Gateway is also the next-hop router for the Inspection VPC. All these VPCs, and the Transit Gateway itself, are owned by a single *Production Networks Account*.
 
-Application SDLC AWS accounts create and own the compute, database, analytics, and storage resources required by the application. The networking resources required by these application resources - such as subnets and [VPC endpoints](#ug-vpc-endpoints) - are shared with the application SDLC account by the Production Networks Account using [AWS Resource Access Manager](#ug-ram).
+Application SDLC AWS accounts create and own the compute, database, analytics, and storage resources required by the application. The networking resources required by these application resources - such as subnets and [VPC endpoints](#ug-vpc-endpoints) - are shared with the application SDLC account by the *Production Networks Account* using [AWS Resource Access Manager](#ug-ram).
+> From the perspective of the *Production Networks Account*, all application SDLC phases are production activities deserving production-level change control processes. For example, a CRM Development VPC should be afforded production-level availability and change control process to avoid disrupting development work. Therefore, activities such as firewall rule development and testing should be performed in an account such as *PreProd Networks Account*.
+
 
 This delegation of responsibilities is enforced by a [Service Control Policy (SCP)](#ug-scp) which denies VPC egress configuration permission to application SDLC accounts. To facilitate this, application SDLC accounts are linked to an *Application OU*, while the Production Networks Account is linked to an *Infrastructure OU*.
 
@@ -689,6 +692,8 @@ Firewall appliance products can be selected from AWS Marketplace. Examples inclu
 * [Cisco](#partner-cisco-firewall)
 * [Fortinet](#partner-fortinet-firewall)
 * [Trend Micro](#partner-trendmicro-firewall)
+
+You are responsible for configuring the firewall appliance rules to perform Layer 7 checks and logging. You are also responsible for forwarding firewall logs to any SIEM ingestion end-points. Your selected firewall appliance may support autoscaling via an [EC2 Autoscaling Group](#ug-as-ec2) created when then appliance is installed. You should configure the Autoscaling Group to span multiple subnets, in multiple availability zones, in order to achieve high availability. 
 
 ### Direct Connect
 A public virtual interface (VIF) allows you to access all AWS public services and endpoints using their public IP addresses. When you create a VPN attachment on the Transit Gateway, you get two public IP addresses for VPN termination at the AWS end. These public IPs are reachable over the public VIF. You can create as many VPN connections as you want over a Public VIF. When you create a BGP peering over the public VIF, AWS advertises the entire AWS public IP range to your router.
@@ -707,7 +712,7 @@ A Gateway Load Balancer operates at the third layer of the Open Systems Intercon
 The following figure illustrates a sample environment with two application accounts, `X` and `Y`, each running fleets of EC2 instances. Account `Y` has deployed an Internet-facing [ALB](#ug-alb). The environment includes two data centres, `North` and `South`, each connecting to a Direct Connect Point-of-Presence, `DX PoP-1` and `DX PoP-2`, respectively. Alternative ISP routes are provisioned.
 ![Architecture Overview](figures/apc-gateways.png)
 
-**(01)**: The Production Networks Account owns all production VPCs. In this environment, there are three VPCs: `X`, `Y` and `Inspection`.
+**(01)**: The *Production Networks Account* owns all production VPCs. In this environment, there are three VPCs: `X`, `Y` and `Inspection`. The *Production Networks Account* is linked to the *Infrastructure OU*, and therefore has no restriction on creating and configuring VPCs.
 
 **(02)**: There are two on-premises data centres, `North` and `South`, each equipped with a hardware router and VPN device. The `North` VPN device initiates two IPsec tunnels. Each tunnel terminates on a public IP of the `VPN-1` Transit Gateway attachment. The `South` device initiates the `VPN-2` tunnels.
 
@@ -753,13 +758,20 @@ The following table shows all the Transit Gateway attachments.
 
 **(08)**: When resources such as EC2 instances or Lambda functions running in the `Xapp-a` subnet (of VPC `X`) need to connect to on-premises systems, or resources in VPC `Y`, the `Xapp` VPC route table (associated with the `Xapp-a` subnet) determines the next hop. The `Xapp-a` route table includes a default rule that forwards all non-local packets to the Transit Gateway - via the `Xattach-a` Transit Gateway network interface. The `Xapp-b` subnet is also associated with the same `Xapp` VPC route table, but attaches through `Xattach-b`. This same approach is used in VPC `Y` by the `Yapp-a` and `Yapp-b` subnets and `Yapp` VPC route table.
 
-**(09)**: The `Attach-a` subnet is associated with the `Attach-a` VPC route table. This route table forwards all traffic to the Gateway Load Balancer Endpoint `gwlb-a` in the `Appliance-a` subnet. Likewise, the `Attach-a` subnet is associated with the `Attach-b` VPC route table, and forwards to the `gwlb-b` Gateway Load Balancer Endpoint.
+**(09)**: The `Attach-a` subnet is associated with the `Attach-a` VPC Route Table. This route table forwards all traffic to the [Gateway Load Balancer Endpoint](#ug-gwlb-endpoints) `gwlb-a` in the `Appliance-a` subnet. Likewise, the `Attach-a` subnet is associated with the `Attach-b` VPC route table, and forwards to the `gwlb-b` Gateway Load Balancer Endpoint. The Gateway Load Balancer Endpoints encapsulate the incoming packets, then forward the encapsulated packets to the Gateway Load Balancer listeners. The listeners forward the packets to the target group in the listener. The load balancer uses a 5-tuple (for TCP/UDP) to select a specific healthy target appliance, ensuring stickiness.
 
+**(10)**: The target firewall appliance performs Layer 7 checks and logging based on your rule configurations. The appliance supports autoscaling, so the EC2 Autoscaling group spans the `Appliance-a` and `Appliance-b` subnets, in availability zones `AZ a` and `AZ b` respectively.
 
+**(11)**: The target firewall appliance returns the allowed packets to the receiving Gateway Load Balancer Endpoint, where they are de-encapsulated. The endpoint acts a transparent bump-in-the-wire, so a packet received by `gwlb-a` will be returned to `gwlb-a` if allowed. Upon return, `gwlb-a` will use the `Appliance-a` VPC Route Table rules to determine its target. If the destination matches VPC `X` or `Y` (10.0.0.0/24), its target is the `Inspection` Transit Gateway Attachment. Likewise, if the destination matches a `North` or `South` data centre prefix propagated by `VPN-1` or `VPN-2` (172.16.0.0/16), the target will also be the `Inspection` TGW attachment. If the destination matches neither a VPC or on-premises prefix, it is presumed to be allowed Internet egress traffic, so the target will be the NAT Gateway `nat-a`. The `gwlb-b` endpoint operates in the same way, however the `Appliance-b` VPC Route Table forwards allowed Internet egress traffic to NAT Gateway `nat-b`.
+
+**(12)**: NAT Gateway `nat-a` is attached to subnet `NAT-a`, which is associated with VPC Route Table `NAT-a`. This route table contains two rules. The first rule checks whether the destination matches VPC `X` or `Y` (10.0.0.0/24), and if so, it is presumed to be an Internet return flow requiring stateful inspection by a firewall appliance, so the target is Gateway Load Balancer Endpoint `gwlb-a`. If the destination does not match the first rule, it is presumed be an allowed Internet egress packet, so the target is the `Inspection` Internet Gateway (IGW). Again, NAT Gateway `nat-b` operates the same way, but targets Gateway Load Balancer Endpoint `gwlb-b`.
+
+**(13)**: VPC `Y` has attached Internet Gateway (IGW) `Y`. The VPC Route Table `Yalb` specifies IGW `Y` as its default target. Route table `Yalb` is associated with subnets `Yalb-a` and `Yalb-b`. This means that resources, such as public load balancers, deployed into `Yalb-a` and `Yalb-b` are able to respond to Internet hosts. Note that subnets `Yapp-a` and `Yapp-b` are associated with VPC Route Table `Yapp`, which does *not* specify IGW `Y` as a target; and therefore resources deployed into `Yapp-a` and `Yapp-b` are unable to respond to Internet hosts.
 
 
 #### VPC Route Tables
-| Route Table          | Destination     | Target
+The following table summarises preceding outline of VPC routing:
+| Route Table            | Destination     | Target
 |------------------------|-----------------|--------
 | `Xapp`                 | 10.0.0.0/25     | local
 |                        | 0.0.0.0/0       | TGW Attachment: `X`
@@ -788,13 +800,31 @@ The following table shows all the Transit Gateway attachments.
 |                        | 10.0.0.0/24     | GWLB Endpoint: `gwlba-b` 
 |                        | 0.0.0.0/0       | IGW: `Inspection`
 
+**(14)**: Because the Transit Gateway has *Appliance Mode* enabled, it selects the `Inspection` TGW Attachment network interface in either the `Attach-a` subnet (in `AZ a`), or in the `Attach-b` subnet (in `AZ b`), when leaving and entering the TGW, using a *flow hash algorithm*. This algorithm uses the packet 5-tuple (for TCP/UDP flows) to select the same network interface for packets entering the `Inspection` VPC via the `Inspection` TGW Attachment, and for packets returning to the TGW via the `Inspection` attachment from the Gateway Load Balancer endpoints `gwlb-a` and `gwlb-b`. This ensures that bidirectional traffic is routed *symmetrically* for the life of the flow.
+
+**(15)**: The *Production Networks Account* shares the `Xapp-a` and `Xapp-b` subnets to the application SDLC account `X` using Resource Access Manager. This means that account `X` is a *participant* in these subnets, while *Production Network Accounts* is the *owner*. Likewise, *Production Networks Account* shares `Yalb-a`, `Yalb-b`, `Yapp-a`, and `Yapp-b` to the account `Y`. The Transit Gateway attachment subnets are *not* shared. Accounts `X` and `Y` are responsible for the creation, management and deletion of their resources; including Amazon EC2 instances, Amazon RDS databases, and load balancers. Account `X` cannot view, or modify resources that belong to account `Y` - vice-versa. Account `X` can view the details of the route tables (and network ACLs) attached to subnets `Xapp-a` and `Xapp-b`. However, account `X` cannot modify VPC-level resources; including route tables, network ACLs, or subnets. Account `X` can reference security groups that belong to account `Y` or the owner or the *Production Networks Account* using the security group ID. Account `X` can only create flow log subscriptions for the interfaces that it owns. Account `X` cannot directly associate one of its Route53 private hosted zones with the VPC `X`, and similarly for account `Y` and VPC `Y`.
+
+**(16)**: Subnets `Xapp-a` and `Xapp-b` each contain the following [VPC interface endpoints](#ug-vpc-endpoints); EC2 (**ec2.ap-southeast-2.amazonaws.com**) and Systems Manager (**ssm.ap-southeast-2.amazonaws.com**, **ssmmessages.ap-southeast-2.amazonaws.com**, **ec2messages.ap-southeast-2.amazonaws.com**). These endpoints have private DNS resolution enabled, and therefore the Route53 private hosted zones containing these service domain names are associated with VPC `X`. As a result, EC2 instances launched by account `X` in subnets `Xapp-a` and `Xapp-b` will resolve these service names to private IPs in `Xapp-a` and `Xapp-b`, and will have two-way routes to these endpoints. Subject to IAM permissions, and security groups, this means that systems administrators will be able to use Session Manager to privately connect to these instances, without SSH or Internet routing.
+
+**(17)**: Security Groups `x1` and `x2` implement Layer 4 firewall rules, that provide fine-grained network access to EC2 instances in subnets `Xapp-a` and `Xapp-b`. Security group `x1` allows inbound HTTPS (443) from on-premises networks (172.16.0.0/16), and unrestricted egress. Members of `x1` are not allowed to communicate with one-another - so there is no allow rule for `x1` sources. Note that command line access is provided by Session Manager and the shared service endpoints described above, so SSH ingress from bastion hosts is *not* required, and is therefore *not* allowed. Security Group `x2` allows inbound PostgreSQL (5432) from members of Security Group `x2`. Again, communication between members and from bastions is not allowed.
+
+**(18)**: Security Group `y0` implements Layer 4 firewall rules for inbound Internet traffic to an [Application Load Balancer](#ug-alb) owned by account `Y` and deployed into subnets `Yalb-a` and `Yalb-b`. These subnets are participants in VPC `Y`, and so can share Internet Gateway `Y` and VPC Route Table `Yalb`. Security group `y0` allows inbound HTTPS (443) from any source. Security Group `y1` only allows inbound HTTPS (443) from members of Security Group `y0` - that is, the Application Load Balancer. Security Group `y2` allows inbound PostgreSQL (5432) from members of Security Group `y2`. Again, communication between security group members, and from bastions, is not required - and therefore not allowed.
 
 
+#### VPC Security Groups
+The following table summarises preceding outline of VPC security groups:
+| VPC | Security Group | Allowed Inbound            | Allowed Outbound |
+|-----|----------------|----------------------------|------------------|
+| `X` | `x1`           | TCP 443 from 172.16.0.0/16 | All to 0.0.0.0/0 |
+|     | `x2`           | TCP 5432 from `x1`         | All to 0.0.0.0/0 |
+| `Y` | `y0`           | TCP 443 from 0.0.0.0/0     | All to 0.0.0.0/0 |
+|     | `y1`           | TCP 443 from `y0`          | All to 0.0.0.0/0 |
+|     | `y2`           | TCP 5432 from `y1`         | All to 0.0.0.0/0 |
 
 
+**(19)**: VPCs `X`, `Y`, and `Inspection` have enabled [VPC Flow Logs](#ug-vpc-flow-logs). Flow logs capture information about the IP traffic going to and from network interfaces in these VPCs. VPC `X` has configured a flow log that publishes *Accept* traffic to [CloudWatch Logs](#ug-cwl). VPC `Y` has configured a flow log that publishes *Accept* and *Reject* traffic to S3. The `Inspaction` VPC has configured two flow logs; the first publishes *Accept* traffic to CloudWatch Logs, while the second publishes *Accept* and *Reject* traffic to S3. Flow logs persisted to S3 are ingested into a SIEM. 
 
-
-
+**(20)**: The *Production Networks Account* has activated [GuardDuty](#ug-guardduty), and accepted the *Security* account as its delegated administrator. GuardDuty is a continuous security monitoring service that analyses and processes: VPC Flow Logs, CloudTrail management event logs, CloudTrail S3 data event logs, and DNS logs. It uses threat intelligence feeds, such as lists of malicious IP addresses and domains, and machine learning to identify unexpected and potentially unauthorised and malicious activity within the *Production Networks Account*. Examples of such activities include; escalations of privileges, uses of exposed credentials, or communication with malicious IP addresses, or domains. For example, GuardDuty can detect compromised EC2 instances serving malware or mining bitcoin. It also monitors AWS account access behavior for signs of compromise, such as unauthorised infrastructure deployments, instances deployed in a Region that has never been used, or unusual API calls, like a password policy change to reduce password strength. GuardDuty reports these activities by producing security [findings](#ug-guardduty-finding-types) and publishing them as [CloudWatch Events](#ug-cwe). You can view these findings in the *Production Networks Account* GuardDuty console, and security engineers can view aggregated findings across the Organization in the *Security* account.
 
 ---
 # **AWS Security Recommendations**
@@ -1986,6 +2016,9 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### Gateway Load Balancer <a id='ug-gwlb'/>
 > <https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/introduction.html>
 
+##### Endpoints <a id='ug-gwlb-endpoints'/>
+> <https://docs.aws.amazon.com/vpc/latest/privatelink/vpce-gateway-load-balancer.html>
+
 #### AWS Global Accelerator <a id='ug-ga'/>
 > <https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html>
 
@@ -2184,4 +2217,4 @@ You can use AWS WAF to create custom, application-specific rules that block atta
 
 
 #### GENEVE <a id='wiki-geneve'/>
-> <https://en.wikipedia.org/wiki/Generic_Network_Virtualization_Encapsulation>
+> <https://datatracker.ietf.org/doc/html/rfc8926>
