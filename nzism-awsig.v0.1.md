@@ -1,7 +1,13 @@
 # *NZISM Implementation Guide for AWS*
 
-*Contents*
+# <a id='toc'>*Table of Contents*</a>
+> * [Definitions and Terminology](#definitions-and-terminology)
+>   * [AWS Terms](#dfn-aws)
+>   * [General Terms](#dfn-general)
 > * [NZISM Control Objective Index](#nzism-control-objective-index)
+>   * [6. Information security monitoring](#nzism-06)
+>   * [7. Information Security Incidents](#nzism-07)
+>   * [8. Physical Security](#nzism-08)
 >   * [19. Gateway security](#nzism-19)
 >   * [22. Enterprise systems security](#nzism-22)
 > * Architecture Pattern Catalogue for NZISM
@@ -40,7 +46,7 @@ The main body of this document has adopted the structure and indexing of the [NZ
 ---
 # *Definitions and Terminology*
 
-## AWS Definitions and Terminology
+## <a id='dfn-aws'>AWS Definitions and Terminology</a>
 
 ### <a id='dfn-srm'>Shared Responsibility Model</a>
 AWS refers to the differentiation of responsibilities between customer and AWS as the [Shared Responsibility Model](#aws-srm).
@@ -132,7 +138,7 @@ The [Amazon EC2](#faq-ec2) compute service is categorised as Infrastructure as a
 An Outpost is a pool of AWS compute and storage capacity deployed at an agency site. AWS operates, monitors, and manages this capacity as part of an AWS Region. You can create subnets on your Outpost and specify them when you create AWS resources such as EC2 instances, EBS volumes, ECS clusters, and RDS instances. Instances in Outpost subnets communicate with other instances in the AWS Region using private IP addresses, all within the same VPC. 
 
 
-## General Definitions and Terminology
+## <a id='dfn-general'>General Definitions and Terminology</a>
 
 
 ## <a id='dfn-availability'>Availability</a>
@@ -191,7 +197,7 @@ This section is for the guidance of agencies. There are no applicable AWS respon
 This section is for the guidance of agencies. There are no applicable AWS responsibilities.
 
 
-# 6. Information security monitoring
+# <a id='nzism-06'>6. Information security monitoring</a>
 
 #### AWS Responsibilities
 The responsibilities that AWS assumes for information security monitoring within [AWS Global Infrastructure](#dfn-gi) and [AWS On-Premises Devices](#dfn-opd) are detailed in the various control objectives under Section 6. 
@@ -303,7 +309,7 @@ Having backups and redundant application components in place is the start of you
 Refer to the [fault isolation](#use-fault-isolation-to-protect-your-workload) [disaster recovery planning](#plan-for-disaster-recovery) topics for detailed recommendations.
 
 
-# 7. Information Security Incidents
+# <a id='nzism-07'>7. Information Security Incidents</a>
 
 #### AWS Responsibilities
 The responsibilities that AWS assumes for information security incident detection, reporting, and management within [AWS Global Infrastructure](#dfn-gi) and [AWS On-Premises Devices](#dfn-opd) are detailed in the various control objectives under Section 7.
@@ -354,7 +360,7 @@ Your are responsible for identifying and implementing processes for information 
 
 
 
-# 8. Physical Security
+# <a id='nzism-08'>8. Physical Security</a>
 
 ## 8.1. Facilities
 
