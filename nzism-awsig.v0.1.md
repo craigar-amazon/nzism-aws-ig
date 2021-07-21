@@ -11,6 +11,15 @@
 >   * [Reliability](#aws-reliability-recommendations)
 > * [NZISM Conformance Pack Control Index](#nzism-conformance-pack-control-index)
 > * [AWS Managed Config Rule Catalogue](#aws-managed-config-rule-catalogue)
+>   * [elb-logging-enabled](#cr-elb-logging-enabled)
+>   * [encrypted-volumes](#cr-encrypted-volumes)
+>   * [guardduty-enabled-centralized](#cr-guardduty-enabled-centralized)
+>   * [rds-storage-encrypted](#cr-rds-storage-encrypted)
+>   * [s3-bucket-ssl-requests-only](#cr-s3-bucket-ssl-requests-only)
+>   * [s3-default-encryption-kms](#cr-s3-default-encryption-kms)
+>   * [vpc-default-security-group-closed](#cr-vpc-default-security-group-closed)
+>   * [vpc-flow-logs-enabled](#cr-vpc-flow-logs-enabled)
+>   * [wafv2-logging-enabled](#cr-wafv2-logging-enabled)
 > * [References](#references)
 
 
@@ -708,6 +717,27 @@ Refer to the [Building a Scalable and Secure Multi-VPC AWS Network Infrastructur
 A Gateway Load Balancer operates at the third layer of the Open Systems Interconnection (OSI) model, the network layer. It listens for all IP packets across all ports and forwards traffic to the target group that's specified in the listener rule. It maintains stickiness of flows to a specific target appliance using 5-tuple (for TCP/UDP flows) or 3-tuple (for non-TCP/UDP flows). The Gateway Load Balancer and its registered virtual appliance instances exchange application traffic using the [GENEVE](#wiki-geneve) encapsulation protocol (on port 6081).
 
 
+## NZISM Controls Implemented
+| NZISM CID | 
+|-----------|
+| [2013](#cid-2013) |
+| [3548](#cid-3548) | 
+| [3562](#cid-3562) | 
+| [3815](#cid-3815)  |
+| [3875](#cid-3875)  |
+| [4333](#cid-4333)  |
+
+
+## AWS Config Rule Compliance
+* [alb-waf-enabled](#cr-alb-waf-enabled)
+* [ec2-instance-no-public-ip](#cr-ec2-instance-no-public-ip)
+* [elb-logging-enabled](#cr-elb-logging-enabled)
+* [guardduty-enabled-centralized](#cr-guardduty-enabled-centralized)
+* [vpc-default-security-group-closed](#cr-vpc-default-security-group-closed)
+* [vpc-flow-logs-enabled](#cr-vpc-flow-logs-enabled)
+* [wafv2-logging-enabled](#cr-wafv2-logging-enabled)
+
+
 ## Example
 The following figure illustrates a sample environment with two application accounts, `X` and `Y`, each running fleets of EC2 instances. Account `Y` has deployed an Internet-facing [ALB](#ug-alb). The environment includes two data centres, `North` and `South`, each connecting to a Direct Connect Point-of-Presence, `DX PoP-1` and `DX PoP-2`, respectively. Alternative ISP routes are provisioned.
 ![Architecture Overview](figures/apc-gateways.png)
@@ -806,7 +836,7 @@ The following table summarises preceding outline of VPC routing:
 
 **(16)**: Subnets `Xapp-a` and `Xapp-b` each contain the following [VPC interface endpoints](#ug-vpc-endpoints); EC2 (**ec2.ap-southeast-2.amazonaws.com**) and Systems Manager (**ssm.ap-southeast-2.amazonaws.com**, **ssmmessages.ap-southeast-2.amazonaws.com**, **ec2messages.ap-southeast-2.amazonaws.com**). These endpoints have private DNS resolution enabled, and therefore the Route53 private hosted zones containing these service domain names are associated with VPC `X`. As a result, EC2 instances launched by account `X` in subnets `Xapp-a` and `Xapp-b` will resolve these service names to private IPs in `Xapp-a` and `Xapp-b`, and will have two-way routes to these endpoints. Subject to IAM permissions, and security groups, this means that systems administrators will be able to use Session Manager to privately connect to these instances, without SSH or Internet routing.
 
-**(17)**: Security Groups `x1` and `x2` implement Layer 4 firewall rules, that provide fine-grained network access to EC2 instances in subnets `Xapp-a` and `Xapp-b`. Security group `x1` allows inbound HTTPS (443) from on-premises networks (172.16.0.0/16), and unrestricted egress. Members of `x1` are not allowed to communicate with one-another - so there is no allow rule for `x1` sources. Note that command line access is provided by Session Manager and the shared service endpoints described above, so SSH ingress from bastion hosts is *not* required, and is therefore *not* allowed. Security Group `x2` allows inbound PostgreSQL (5432) from members of Security Group `x2`. Again, communication between members and from bastions is not allowed.
+**(17)**: [Security Groups](#ug-vpc-security-groups) `x1` and `x2` implement Layer 4 firewall rules, that provide fine-grained network access to EC2 instances in subnets `Xapp-a` and `Xapp-b`. Security group `x1` allows inbound HTTPS (443) from on-premises networks (172.16.0.0/16), and unrestricted egress. Members of `x1` are not allowed to communicate with one-another - so there is no allow rule for `x1` sources. Note that command line access is provided by Session Manager and the shared service endpoints described above, so SSH ingress from bastion hosts is *not* required, and is therefore *not* allowed. Security Group `x2` allows inbound PostgreSQL (5432) from members of Security Group `x2`. Again, communication between members and from bastions is not allowed.
 
 **(18)**: Security Group `y0` implements Layer 4 firewall rules for inbound Internet traffic to an [Application Load Balancer](#ug-alb) owned by account `Y` and deployed into subnets `Yalb-a` and `Yalb-b`. These subnets are participants in VPC `Y`, and so can share Internet Gateway `Y` and VPC Route Table `Yalb`. Security group `y0` allows inbound HTTPS (443) from any source. Security Group `y1` only allows inbound HTTPS (443) from members of Security Group `y0` - that is, the Application Load Balancer. Security Group `y2` allows inbound PostgreSQL (5432) from members of Security Group `y2`. Again, communication between security group members, and from bastions, is not required - and therefore not allowed.
 
@@ -1522,14 +1552,59 @@ NZISM CID | Control | Paragraph | Objective | Section |
 ---
 # AWS Managed Config Rule Catalogue
 
+
+## <a id='cr-alb-waf-enabled'>alb-waf-enabled</a>
+Checks if Web Application Firewall (WAF) is enabled on Application Load Balancers (ALBs). This rule is NON_COMPLIANT if key: waf.enabled is set to false.
+> <https://docs.aws.amazon.com/config/latest/developerguide/alb-waf-enabled.html>
+
+### Resources In Scope
+* [Application Load Balancer](#ug-alb)
+
+
+
+## <a id='cr-ec2-instances-in-vpc'>ec2-instances-in-vpc</a>
+Checks if your EC2 instances belong to a virtual private cloud (VPC). Optionally, you can specify the `vpcId` parameter to associate with your instances.
+> <https://docs.aws.amazon.com/config/latest/developerguide/ec2-instances-in-vpc.html>
+
+### Resources In Scope
+* [EC2 Instances](#ug-ec2)
+
+
+
+## <a id='cr-ec2-instance-no-public-ip'>ec2-instance-no-public-ip</a>
+Checks whether Amazon Elastic Compute Cloud (Amazon EC2) instances have a public IP association. The rule is NON_COMPLIANT if the publicIp field is present in the Amazon EC2 instance configuration item. This rule applies only to IPv4.
+> <https://docs.aws.amazon.com/config/latest/developerguide/ec2-instance-no-public-ip.html>
+
+### Resources In Scope
+* [EC2 Instances](#ug-ec2)
+
+
+
+## <a id='cr-elb-logging-enabled'>elb-logging-enabled</a>
+Checks if the Application Load Balancer and the Classic Load Balancer have logging enabled. The rule is NON_COMPLIANT if the access_logs.s3.enabled is false or access_logs.S3.bucket is not equal to the `s3BucketName` parameter that you provided.
+> <https://docs.aws.amazon.com/config/latest/developerguide/elb-logging-enabled.html>
+
+### Resources In Scope
+* [Load Balancer](#ug-lb)
+
+
+
 ## <a id='cr-encrypted-volumes'>encrypted-volumes</a>
 Checks if the EBS volumes that are in an attached state are encrypted. If you specify the ID of a KMS key for encryption using the `kmsId` parameter, the rule checks if the EBS volumes in an attached state are encrypted with that KMS key.
 > <https://docs.aws.amazon.com/config/latest/developerguide/encrypted-volumes.html>
 
 
+
+## <a id='cr-guardduty-enabled-centralized'>guardduty-enabled-centralized</a>
+Checks if Amazon GuardDuty is enabled in your AWS account and region. If you provide an AWS account for centralization via the `CentralMonitoringAccount` parameter, the rule evaluates the Amazon GuardDuty results in the centralized account. The rule is COMPLIANT when Amazon GuardDuty is enabled.
+> <https://docs.aws.amazon.com/config/latest/developerguide/guardduty-enabled-centralized.html>
+
+
+
 ## <a id='cr-rds-storage-encrypted'>rds-storage-encrypted</a>
 Checks whether storage encryption is enabled for your RDS DB instances.
 > <https://docs.aws.amazon.com/config/latest/developerguide/rds-storage-encrypted.html>
+
 
 
 ## <a id='cr-s3-bucket-ssl-requests-only'>s3-bucket-ssl-requests-only</a>
@@ -1573,13 +1648,36 @@ To determine HTTP or HTTPS requests in a bucket policy, use a condition that che
 }
 ```
 
-
 Refer to this [Knowledge Base Article](#kb-s3-ssl) for more details.
+
 
 
 ## <a id='cr-s3-default-encryption-kms'>s3-default-encryption-kms</a>
 Checks whether the Amazon S3 buckets are encrypted with AWS Key Management Service(AWS KMS). The rule is NON_COMPLIANT if the Amazon S3 bucket is not encrypted with AWS KMS key.
 > <https://docs.aws.amazon.com/config/latest/developerguide/s3-default-encryption-kms.html>
+
+
+
+## <a id='cr-vpc-default-security-group-closed'>vpc-default-security-group-closed</a>
+Checks that the default security group of any Amazon Virtual Private Cloud (VPC) does not allow inbound or outbound traffic. The rule returns NOT_APPLICABLE if the security group is not default. The rule is NON_COMPLIANT if the default security group has one or more inbound or outbound traffic rules.
+> <https://docs.aws.amazon.com/config/latest/developerguide/vpc-default-security-group-closed.html>
+
+### Resources In Scope
+* [VPC Security Groups](#ug-vpc-security-groups)
+
+
+
+## <a id='cr-vpc-flow-logs-enabled'>vpc-flow-logs-enabled</a>
+Checks whether Amazon Virtual Private Cloud flow logs are found and enabled for Amazon VPC.
+> <https://docs.aws.amazon.com/config/latest/developerguide/vpc-flow-logs-enabled.html>
+
+
+## <a id='cr-wafv2-logging-enabled'>wafv2-logging-enabled</a>
+Checks whether logging is enabled on AWS Web Application Firewall (WAFV2) regional and global web access control list (ACLs). The rule is NON_COMPLIANT if the logging is enabled but the logging destination does not match the value of the parameter.
+> <https://docs.aws.amazon.com/config/latest/developerguide/wafv2-logging-enabled.html>
+
+
+
 
 
 ---
