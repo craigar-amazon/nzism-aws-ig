@@ -489,6 +489,7 @@ You must ensure that:
 * all gateways contain mechanisms to filter or limit data flow at the network and content level to only the information necessary for business purposes.
 
 #### Agency Guidance
+Consider implementing this control using the [Gateway Security Using Firewall Appliances](#apc-gfsa) architecture pattern. This pattern is applicable if you have multiple product teams, each managing their own AWS accounts, and a centralised networking team responsible for controlling access to [on-premises](#dfn-op) and Internet resources. Because this pattern allows you to select a virtual firewall appliance from a third-party vendor, it can leverage any existing in-house skills your agency has with those vendor products.
 
 
 ### 19.1.12. Configuration of gateways
