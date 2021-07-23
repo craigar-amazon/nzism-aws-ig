@@ -1577,9 +1577,10 @@ For workloads on existing physical or virtual data centers or private clouds, [C
 ---
 # NZISM Conformance Pack Control Index
 
-NZISM CID | Control | Paragraph | Objective | Section |
-----------|---------|-----------|-----------|---------|
-[4839](#cid-4839) | 22.1.24.C.04 | 22.1.24. Unauthorised Access | 22.1. Cloud Computing | 22. Enterprise systems security |
+NZISM CID         | Control      | Paragraph                    | Objective             | Section |
+------------------|--------------|------------------------------|-----------------------|---------|
+[3549](#cid-3549) | 19.1.11.C.01 | 19.1.11. Using gateways      | 19.1. Gateways        | [19. Gateway security](#nzism-19)|
+[4839](#cid-4839) | 22.1.24.C.04 | 22.1.24. Unauthorised Access | 22.1. Cloud Computing | [22. Enterprise systems security](#nzism-22) |
 
 ---
 # AWS Managed Config Rule Catalogue
