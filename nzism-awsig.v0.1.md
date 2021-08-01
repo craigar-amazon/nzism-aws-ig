@@ -459,7 +459,7 @@ You are responsible for ensuring that tamper evident seals and associated auditi
 
 ## 19.1. Gateways
 
-#### AWS Responsibilities
+##### AWS Responsibilities
 AWS is responsible for ensuring that gateways are properly configured to protect its [Global Infrastructure](#dfn-gi), and the information transferred between systems from different security domains.
 
 The responsibilities that AWS assumes for gateway configuration within [AWS On-Premises Devices](#dfn-opd), and information transferred to and from the AWS Global Infrastructure, is described in these documents:
@@ -475,29 +475,32 @@ The responsibilities that AWS assumes for gateway configuration within [AWS On-P
 You have self-service access to [independent assessments](#dfn-ia) of the AWS gateway controls.
 
 
-#### Agency Responsibilities
+##### Agency Responsibilities
 You are responsible for ensuring that gateways are properly configured to protect [your AWS environment](#dfn-env), and the information transferred between systems from different security domains. Your responsibilities for the various type of gateway are detailed in Section 19.1.
+
+### 19.1.1 to 19.1.10
+No applicable AWS guidance
 
 ### 19.1.11. Using gateways
 
-### 19.1.11.C.01
+#### 19.1.11.C.01
 #### CID 3548
 
-#### Agency Responsibilities
+##### Agency Responsibilities
 You must ensure that:
 * all your [VPC](#ug-vpc) and [on-premises](#dfn-op) networks are protected from VPC and on-premises networks in other security domains by one or more gateways; and
 * all gateways contain mechanisms to filter or limit data flow at the network and content level to only the information necessary for business purposes.
 
-#### Agency Guidance
+##### Agency Guidance
 Consider implementing this control using the [Gateway Security Using Firewall Appliances](#apc-gsfa) architecture pattern. This pattern is applicable if you have multiple product teams, each managing their own AWS accounts, and a centralised networking team responsible for controlling access to [on-premises](#dfn-op) and Internet resources. Because this pattern allows you to select a virtual firewall appliance from a third-party vendor, it can leverage any existing in-house skills your agency has with those vendor products.
 
 
 ### 19.1.12. Configuration of gateways
 
-### 19.1.12.C.01.
+#### 19.1.12.C.01.
 #### CID 3562
 
-#### Agency Responsibilities
+##### Agency Responsibilities
 You must ensure that gateways:
 * are the only communications paths into and out of internal networks;
 * by default, deny all connections into and out of the network;
@@ -515,16 +518,121 @@ You are responsible for implementing all of these controls within [on-premises](
 * VPCs are configured through AWS-managed API end-points (control plane). All VPC configuration requests must be authenticated and authorized by [AWS Identity and Access Management](#ug-iam).
 
 
-#### Agency Guidance
+##### Agency Guidance
 You should [control traffic at all layers](#control-traffic-at-all-layers), and then [implement inspection and protection](#implement-inspection-and-protection) at each of these layers. Wherever possible, you should [automate these network protections](#automate-network-protection).
 
-The [VPC Flow Logs](#ug-vpc-flow-logs) feature that enables you to capture information about the IP traffic going to and from network interfaces in your VPC. Flow log data can be published to [Amazon CloudWatch Logs](#ug-cwl) or [Amazon S3](#ug-s3).
+The [VPC Flow Logs](#ug-vpc-flow-logs) feature enables you to capture information about the IP traffic going to and from network interfaces in your VPC. Flow log data can be published to [Amazon CloudWatch Logs](#ug-cwl) or [Amazon S3](#ug-s3).
 
 [Amazon GuardDuty](#ug-guardduty) analyses multiple data sources, including VPC Flow Logs and DNS logs. It uses threat intelligence feeds, such as lists of malicious IP addresses and domains, and machine learning to identify unexpected and potentially unauthorized and malicious activity within your AWS environment. This can include issues like escalations of privileges, uses of exposed credentials, or communication with malicious IP addresses, or domains.
 > For example, GuardDuty can detect compromised EC2 instances serving malware or mining bitcoin. It also monitors AWS account access behavior for signs of compromise, such as unauthorized infrastructure deployments, like instances deployed in a Region that has never been used, or unusual API calls, like a password policy change to reduce password strength. 
 
 GuardDuty informs you of the status of your AWS environment by producing security findings that you can view in the GuardDuty console or through Amazon CloudWatch events. You can use [CloudWatch Events](#ug-cwe) with GuardDuty to set up automated finding alerts by sending GuardDuty finding events to a messaging hub to help increase the visibility of GuardDuty findings.
 
+Consider implementing this control using the [Gateway Security Using Firewall Appliances](#apc-gsfa) architecture pattern.
+
+
+### 19.1.13. Operation of gateways
+
+#### 19.1.13.C.01.
+#### CID 3578
+
+##### Agency Responsibilities
+You must ensure that all gateways connecting networks in different security domains:
+* include a firewall of an appropriate assurance level on all gateways to filter and log network traffic attempting to enter the gateway;
+* are configured to save event logs to a separate, secure log server;
+* are protected by authentication, logging and audit of all physical access to gateway components; and
+* have all controls tested to verify their effectiveness after any changes to their configuration.
+
+You are responsible for implementing all of these controls within [on-premises](#dfn-op) networks. However, the [VPCs](#ug-vpc) within your AWS environment inherit the following controls from AWS:
+* By design, communications paths into and out of VPCs are controlled by Gateways (sub-types listed below), [VPC Endpoints](#ug-vpc-endpoints), [PrivateLink](#ug-vpc-privatelink), and [Peering](#ug-vpc-peering). The most commonly used gateway types are:
+> * [Internet Gateways](#ug-vpc-igw),
+> * [Transit Gateways](#ug-tgw),
+> * [Virtual Private Gateways](#ug-vpn-s2s)
+* VPCs are configured through AWS-managed API end-points (control plane). All VPC configuration requests must be authenticated and authorized by [AWS Identity and Access Management](#ug-iam).
+
+
+##### Agency Guidance
+You should [control traffic at all layers](#control-traffic-at-all-layers), and then [implement inspection and protection](#implement-inspection-and-protection) at each of these layers. Wherever possible, you should [automate these network protections](#automate-network-protection).
+
+You should apply multiple controls with a defense in depth approach for both inbound and outbound traffic, including the use of [security groups](#ug-vpc-security-groups).
+
+A security group acts as a virtual firewall for your instance to control inbound and outbound traffic. When you launch an instance in a VPC, you can assign up to five security groups to the instance. Security groups act at the instance level, not the subnet level. Therefore, each instance in a subnet in your VPC can be assigned to a different set of security groups.
+
+For each security group, you add rules that control the inbound traffic to instances, and a separate set of rules that control the outbound traffic.
+
+A [network access control list](#ug-vpc-nacl) is an optional layer of security for your VPC that acts as a firewall for controlling traffic in and out of one or more subnets. A network ACL has separate inbound and outbound rules, and each rule can either allow or deny traffic. 
+
+The [VPC Flow Logs](#ug-vpc-flow-logs) feature enables you to capture information about the IP traffic going to and from network interfaces in your VPC. These flows include traffic egressing the VPC through a gateway, and traffic ingressing the VPC through a gateway. Each flow log record includes an indication of whether the traffic was accepted or rejected by the security group protecting the network interface. Flow log data can be published to [Amazon CloudWatch Logs](#ug-cwl) or [Amazon S3](#ug-s3).
+
+You can also monitor your [NAT gateway](#ug-vpc-nat-gateway) using CloudWatch, which collects information from your NAT gateway and creates readable, near real-time metrics. You can use this information to monitor and troubleshoot your NAT gateway. 
+
+Consider implementing this control using the [Gateway Security Using Firewall Appliances](#apc-gsfa) architecture pattern.
+
+
+### 19.1.14. Demilitarised zones
+
+#### 19.1.14.C.02.
+#### CID 3623
+
+##### Agency Responsibilities
+You should use demilitarised zones to house systems and information directly accessed externally.
+
+##### Agency Guidance
+You should [control traffic at all layers](#control-traffic-at-all-layers), and then [implement inspection and protection](#implement-inspection-and-protection) at each of these layers. Wherever possible, you should [automate these network protections](#automate-network-protection).
+
+Consider implementing this control using the [Gateway Security Using Firewall Appliances](#apc-gsfa) architecture pattern. In this pattern, the only resources that can be accessed from the Internet are[application load balancers](#ug-alb). Compute and database resources are deployed into subnets that have no direct egress to the Internet, and are protected by [security groups](#ug-vpc-security-groups) that do not allow inbound connections from the Internet.
+
+
+
+### 19.1.15. Risk assessment
+No applicable AWS guidance
+
+
+### 19.1.16. Risk transfer
+No applicable AWS guidance
+
+
+### 19.1.17. Information stakeholders and Shared Ownership
+No applicable AWS guidance
+
+
+### 19.1.18. System user training
+No applicable AWS guidance
+
+
+### 19.1.19. Administration of gateways
+
+#### 19.1.19.C.01.
+#### CID 3660
+
+#### 19.1.19.C.05.
+#### CID 3676
+
+
+### 19.1.20. System user authentication
+
+#### 19.1.20.C.01.
+#### CID 3683
+
+#### 19.1.20.C.02.
+#### CID 3685
+
+#### 19.1.20.C.03.
+#### CID 3686
+
+
+### 19.1.21. IT equipment authentication
+No applicable AWS guidance
+
+
+### 19.1.22. Configuration control
+No applicable AWS guidance
+
+
+#### 19.1.23. Testing of gateways
+
+#### 19.1.23.C.01.
+#### CID 3712
 
 
 
@@ -747,14 +855,15 @@ Public application load balancers should also use [WAF](#ug-waf) to allow or blo
 
 
 ## NZISM Controls Implemented
-| NZISM CID | 
-|-----------|
-| [2013](#cid-2013) |
-| [3548](#cid-3548) | 
-| [3562](#cid-3562) | 
-| [3815](#cid-3815)  |
-| [3875](#cid-3875)  |
-| [4333](#cid-4333)  |
+| NZISM CID         | Implementation Features 
+|-------------------|--------------------------
+| [3548](#cid-3548) | Centralised TGW and IGW
+| [3562](#cid-3562) | Firewall Logs, SCP, Flow Logs, GuardDuty
+| [3578](#cid-3578) | Security Group Rules, Flow Logs, NAT Gateway
+| [3623](#cid-3623) | Application Load Balancers, Security Group Rules
+| [3815](#cid-3815) | GuardDuty
+| [3875](#cid-3875) | Firewall Logs, GuardDuty Logs, Flow Logs
+| [4333](#cid-4333) | Firewall Rules (L7), Security Group Rules (L4)
 
 
 ## AWS Config Rule Compliance
@@ -928,7 +1037,7 @@ For network connectivity that can include thousands of VPCs, AWS accounts, and o
 ### Control traffic at all layers
 When architecting your network topology, you should examine the connectivity requirements of each component. For example, if a component requires internet accessibility (inbound and outbound), connectivity to VPCs, edge services, and external data centers.
 
-A [VPC](#ug-vpc) allows you to define your network topology that spans an [AWS Region](#aws-regions) with a private IPv4 address range that you set, or an IPv6 address range AWS selects. You should apply multiple controls with a defense in depth approach for both inbound and outbound traffic, including the use of security groups (stateful inspection firewall), Network ACLs, subnets, and route tables. Within a VPC, you can create subnets in an Availability Zone. Each subnet can have an associated route table that defines routing rules for managing the paths that traffic takes within the subnet. You can define an internet routable subnet by having a route that goes to an internet or NAT gateway attached to the VPC, or through another VPC.
+A [VPC](#ug-vpc) allows you to define your network topology that spans an [AWS Region](#aws-regions) with a private IPv4 address range that you set, or an IPv6 address range AWS selects. You should apply multiple controls with a defense in depth approach for both inbound and outbound traffic, including the use of [security groups](#ug-vpc-security-groups) (stateful inspection firewall), Network ACLs, subnets, and route tables. Within a VPC, you can create subnets in an Availability Zone. Each subnet can have an associated route table that defines routing rules for managing the paths that traffic takes within the subnet. You can define an internet routable subnet by having a route that goes to an internet or NAT gateway attached to the VPC, or through another VPC.
 
 When an instance, RDS database, or other service is launched within a VPC, it has its own security group per network interface. This firewall is outside the operating system layer and can be used to define rules for allowed inbound and outbound traffic. You can also define relationships between security groups. For example, instances within a database tier security group only accept traffic from instances within the application tier, by reference to the security groups applied to the instances involved. Unless you are using non-TCP protocols, it shouldn’t be necessary to have an EC2 instance directly accessible by the internet (even with ports restricted by security groups) without a [load balancer](#ug-lb), or [CloudFront](#ug-cloudfront). This helps protect it from unintended access through an operating system or application issue. A subnet can also have a network ACL attached to it, which acts as a stateless firewall. You should configure the network ACL to narrow the scope of traffic allowed between layers, note that you need to define both inbound and outbound rules.
 
@@ -2185,6 +2294,12 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ##### VPC Flow Logs <a id='ug-vpc-flow-logs'/>
 > <https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html>
+
+##### NAT Gateways <a id='ug-vpc-nat-gateway'/>
+> <https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html>
+
+##### Network ACLS <a id='ug-vpc-nacl'/>
+> <https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html>
 
 #### AWS VPN - Client <a id='ug-vpn-client'/>
 > <https://docs.aws.amazon.com/vpn/latest/clientvpn-user/client-vpn-user-what-is.html>
