@@ -605,6 +605,14 @@ No applicable AWS guidance
 #### 19.1.19.C.01.
 #### CID 3660
 
+##### Agency Responsibilities
+You must limit access to gateway administration functions.
+
+##### Agency Guidance
+
+
+
+
 #### 19.1.19.C.05.
 #### CID 3676
 
@@ -860,7 +868,7 @@ Public application load balancers should also use [WAF](#ug-waf) to allow or blo
 | [3548](#cid-3548) | Centralised TGW and IGW
 | [3562](#cid-3562) | Firewall Logs, SCP, Flow Logs, GuardDuty
 | [3578](#cid-3578) | Security Group Rules, Flow Logs, NAT Gateway
-| [3623](#cid-3623) | Application Load Balancers, Security Group Rules
+| [3623](#cid-3623) | Internet-facing ALB, Security Group Rules
 | [3815](#cid-3815) | GuardDuty
 | [3875](#cid-3875) | Firewall Logs, GuardDuty Logs, Flow Logs
 | [4333](#cid-4333) | Firewall Rules (L7), Security Group Rules (L4)
@@ -1018,7 +1026,40 @@ Wherever you implement the control, the goal is the same: manage risk. A range o
 
 # Identity and Access Management
 
+## Identity Management
+> Source: <https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/identity-management.html>
+
+There are two types of identities you need to manage when approaching operating secure AWS workloads.
+
+* *Human Identities*: The administrators, developers, operators, and consumers of your applications require an identity to access your AWS environments and applications. These can be members of your organization, or external users with whom you collaborate, and who interact with your AWS resources via a web browser, client application, mobile app, or interactive command-line tools.
+
+* *Machine Identities*: Your workload applications, operational tools, and components require an identity to make requests to AWS services, for example, to read data. These identities include machines running in your AWS environment, such as Amazon EC2 instances or AWS Lambda functions. You can also manage machine identities for external parties who need access. Additionally, you might also have machines outside of AWS that need access to your AWS environment.
+
+
+### Rely on a centralized identity provider
+For workforce identities, rely on an identity provider that enables you to manage identities in a centralized place. This makes it easier to manage access across multiple applications and services, because you are creating, managing, and revoking access from a single location. For example, if someone leaves your organization, you can revoke access for all applications and services (including AWS) from one location. This reduces the need for multiple credentials and provides an opportunity to integrate with existing human resources (HR) processes.
+
+For federation with individual AWS accounts, you can use centralized identities for AWS with a [SAML 2.0](#ug-iam-saml2) based provider with AWS IAM. You can use any provider — whether hosted by you in AWS, external to AWS, or supplied by the AWS Partner Network (APN) — that is compatible with the SAML 2.0 protocol. You can use federation between your AWS account and your chosen provider to grant a user or application access to call AWS API operations by using a SAML assertion to get temporary security credentials. Web-based single sign-on is also supported, allowing users to sign in to the AWS Management Console from your sign in portal.
+
+For federation to multiple accounts in your AWS Organization, you can configure your identity source in [AWS Single Sign-On](#ug-sso) (AWS SSO), and specify where your users and groups are stored. Once configured, your identity provider is your source of truth, and information can be synchronized using the [System for Cross-domain Identity Management](#ug-sso-automatic-provisioning) (SCIM) v2.0 protocol. You can then look up users or groups and grant them single sign-on access to AWS accounts, cloud applications, or both.
+
+AWS SSO integrates with AWS Organizations, which enables you to configure your identity provider once and then [grant access to existing and new accounts](#ug-sso-account-access) managed in your organization. AWS SSO provides you with a default store, which you can use to manage your users and groups. If you choose to use the AWS SSO store, create your users and groups and assign their level of access to your AWS accounts and applications, keeping in mind the best practice of least privilege. Alternatively, you can choose to:
+* [Connect to Your External Identity Provider using SAML 2.0](#ug-sso-external-saml-idp),
+* [Connect to Your Microsoft AD Directory using AWS Directory Service](#ug-sso-mad).
+
+Once configured, you can sign into the AWS Management Console, [command line interface](#ug-sso-cli), or the AWS mobile app, by authenticating through your central identity provider.
+
+For managing end-users or consumers of your workloads, such as a mobile app, you can use [Amazon Cognito](#ug-cognito). It provides authentication, authorization, and user management for your web and mobile apps. Your users can sign in directly with a user name and password, or through a third party, such as Amazon, Apple, Facebook, or Google.
+
+
+
+## Permissions Management
+TODO
+
+
+
 # Detection
+TODO
 
 # Infrastructure Protection
 
@@ -2081,6 +2122,14 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Policies <a id='ug-iam-policy'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_access-management.html>
 
+##### SAML 2.0 <a id='ug-iam-saml2'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_saml.html>
+
+
+#### Amazon Cognito <a id='ug-cognito'/>
+> <https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html>
+
+
 #### AWS Firewall Manager <a id='ug-firewall-manager'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/fms-chapter.html>
 
@@ -2116,6 +2165,24 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ##### Shield Advanced Resource Protections <a id='ug-shield-advanced-resource-protections'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/ddos-manage-protected-resources.html>
+
+#### AWS Single Sign-On (SSO) <a id='ug-sso'/>
+> <https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html>
+
+##### SSO access to AWS accounts <a id='ug-sso-account-access'/>
+> <https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-accounts.html>
+
+##### External SAML IdP <a id='ug-sso-external-saml-idp'/>
+> <https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source-idp.html>
+
+##### Microsoft Active Directory Identity Source <a id='ug-sso-mad'/>
+> <https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source-ad.html>
+
+##### Automated Provisioning with SCIM <a id='ug-sso-automatic-provisioning'/>
+> <https://docs.aws.amazon.com/singlesignon/latest/userguide/provision-automatically.html>
+
+##### Configuring the AWS CLI to use AWS SSO <a id='ug-sso-cli'/>
+> <https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html>
 
 #### AWS WAF <a id='ug-waf'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html>
