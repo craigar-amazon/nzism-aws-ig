@@ -14,7 +14,16 @@
 >   * [Gateway Security Using Firewall Appliances](#apc-gsfa)
 > * AWS Well-Architected Recommendations
 >   * [Security](#aws-security-recommendations)
+>     * [Security Foundations](#security-foundations)
+>     * [Identity and Access Management](#identity-and-access-management)
+>     * [Detection](#detection)
+>     * [Infrastructure Protection](#infrastructure-protection)
+>     * [Data Protection](#data-protection)
+>     * [Incident Response](#incident-response)
 >   * [Reliability](#aws-reliability-recommendations)
+>     * [Definitions](#reliability-definitions)
+>     * [Change Management](#change-management)
+>     * [Failure Management](#failure-management)
 > * [NZISM Conformance Pack Control Index](#nzism-conformance-pack-control-index)
 > * [AWS Managed Config Rule Catalogue](#aws-managed-config-rule-catalogue)
 >   * [elb-logging-enabled](#cr-elb-logging-enabled)
@@ -398,7 +407,7 @@ You are responsible for ensuring that network infrastructure used by [AWS On-Pre
 AWS is responsible for ensuring that IT equipment within the [AWS Global Infrastructure](#dfn-gi) is secured outside of normal working hours, or is non-operational, when work areas are unoccupied.
 
 [AWS Outposts](#dfn-outposts)
-> * Amazon EBS encryption is an encryption solution for Outposts EBS volumes and snapshots. It uses [AWS Key Management Service](#ug-kms) (AWS KMS) [customer master keys](#ug-kms-cmk) (CMK). With Outposts, [encryption](#ug-ecs-ebs-encryption) is enabled by default.
+> * Amazon EBS encryption is an encryption solution for Outposts EBS volumes and snapshots. It uses [AWS Key Management Service](#ug-kms) (AWS KMS) [customer master keys](#ug-kms-cmk) (CMK). With Outposts, [encryption](#ug-ec2-ebs-encryption) is enabled by default.
 > * In addition, customer data is wrapped in a NIST-compliant physical security key (Nitro Security Key). Destroying the security key device is equivalent to destroying the data.
 > * If hardware maintenance is required, AWS will contact you to confirm a date and time for the AWS installation team to visit your Outpost site. When the AWS installation team arrives on site, they will replace the unhealthy hosts, switches, or rack elements and bring the new capacity online. They will not perform any hardware diagnostics or repairs on site. If they replace a host, they will remove and destroy the NIST-compliant physical security key, effectively shredding any data that might remain on the hardware. This ensures that no data leaves your site. If they replace an Outpost networking device, network configuration information might be present on the device when it is removed from the site. This information might include IP addresses and ASNs used to establish virtual interfaces for configuring the path to your local network or back to the Region.
 > * AWS encrypts in-transit data over the [service link](#ug-outposts-connectivity-region) that connects your Outpost to its AWS Region. For more information, see Connectivity through service links.
@@ -1052,6 +1061,32 @@ Once configured, you can sign into the AWS Management Console, [command line int
 For managing end-users or consumers of your workloads, such as a mobile app, you can use [Amazon Cognito](#ug-cognito). It provides authentication, authorization, and user management for your web and mobile apps. Your users can sign in directly with a user name and password, or through a third party, such as Amazon, Apple, Facebook, or Google.
 
 
+### Leverage user groups and attributes
+As the number of users you manage grows, you will need to determine ways to organize them so that you can manage them at scale. Place users with common security requirements in groups defined by your identity provider, and put mechanisms in place to ensure that user attributes that may be used for access control (for example, department or location) are correct and updated. Use these groups and attributes to control access, rather than individual users. This allows you to manage access centrally by changing a user’s group membership or attributes once with a [permission set](#ug-sso-permission-sets), rather than updating many individual policies when a user’s access needs change. You can use AWS SSO to manage user groups and attributes. AWS SSO supports most commonly used attributes whether they are entered manually during user creation or automatically provisioned using a synchronization engine, such as defined in the System for Cross-Domain Identity Management (SCIM) specification.
+
+
+### Use strong sign-in mechanisms
+Enforce minimum password length, and educate your users to avoid common or reused passwords. Enforce multi-factor authentication (MFA) with software or hardware mechanisms to provide an additional layer of verification. For example, when using AWS SSO as the identity source, configure the “context-aware” or “always-on” setting for [MFA](#ug-sso-mfa), and allow users to enroll their own MFA devices to accelerate adoption. When using an external identity provider (IdP), configure your IdP for MFA.
+
+
+### Use temporary credentials
+Require identities to dynamically acquire [temporary credentials](#ug-iam-temporary-credentials). For workforce identities, use AWS SSO, or federation with IAM, to access AWS accounts. For machine identities, such as EC2 instances or Lambda functions, require the use of IAM roles instead of IAM users with long term access keys.
+
+For human identities using the AWS Management Console, require users to acquire temporary credentials and federate into AWS. You can do this using the AWS SSO user portal or configuring federation with IAM. For users requiring CLI access, ensure that they use AWS CLI v2, which supports [direct integration](#ug-sso-cli) with AWS Single Sign-On (AWS SSO). Users can create CLI profiles that are linked to AWS SSO accounts and roles. The CLI automatically retrieves AWS credentials from AWS SSO and refreshes them on your behalf. This eliminates the need to copy and paste temporary AWS credentials from the AWS SSO console. For SDK, users should rely on AWS Security Token Service (AWS STS) to assume roles to receive temporary credentials. In certain cases, temporary credentials might not be practical. You should be aware of the risks of storing access keys, rotate these often, and require MFA as a condition when possible.
+
+For cases where you need to grant consumers access to your AWS resources, use Amazon Cognito [identity pools](#ug-cognito-identity-pools) and assign them a set of temporary, limited privilege credentials to access your AWS resources. The permissions for each user are controlled through [IAM roles](#ug-iam-roles) that you create. You can define [rules to choose the role](#ug-cognito-identity-pools-rbac) for each user based on claims in the user's ID token. You can define a default role for authenticated users. You can also define a separate IAM role with limited permissions for guest users who are not authenticated.
+
+For machine identities, you should rely on IAM roles to grant access to AWS. For EC2 instances, you can use [roles for Amazon EC2](#ug-iam-ec2-roles). You can attach an IAM role to your EC2 instance to enable your applications running on Amazon EC2 to use temporary security credentials that AWS creates, distributes, and rotates automatically through the [Instance Metadata Service](#ug-ec2-imdsv2) (IMDS). The latest version of IMDS helps protect against vulnerabilities that expose the temporary credentials and should be implemented. For accessing EC2 instances using keys or passwords, [AWS Systems Manager](#ug-systems-manager) is a more secure way to access and manage your instances using a pre-installed agent without the stored secret. Additionally, other AWS services, such as AWS Lambda, enable you to configure an IAM service role to grant the service permissions to perform AWS actions using temporary credentials. In situations where you cannot use temporary credentials, use programmatic tools, such as [AWS Secrets Manager](#ug-secrets-manager), to automate credential rotation and management.
+
+
+### Audit and rotate credentials periodically
+Periodic validation, preferably through an automated tool, is necessary to verify that the correct controls are enforced. For human identities, you should require users to change their passwords periodically and retire access keys in favor of temporary credentials. As you are moving from IAM users to centralized identities, you can generate a [credential report](#ug-iam-credential-reports) to audit your IAM users. We also recommend that you enforce MFA settings in your identity provider. You can set up [AWS Config Rules](#ug-config-rules) to monitor these settings. For machine identities, you should rely on temporary credentials using IAM roles. For situations where this is not possible, frequent auditing and rotating access keys is necessary.
+
+
+### Store and use secrets securely
+For credentials that are not IAM-related and cannot take advantage of temporary credentials, such as database logins, use a service that is designed to handle management of secrets, such as [AWS Secrets Manager](#ug-secrets-manager). Secrets Manager makes it easy to manage, rotate, and securely store encrypted secrets using [supported services](#ug-secrets-manager-integrated-services). Calls to access the secrets are logged in [CloudTrail](#ug-cloudtrail) for auditing purposes, and IAM permissions can grant least-privilege access to them. 
+
+
 
 ## Permissions Management
 TODO
@@ -1287,7 +1322,7 @@ Enforce encryption at rest: You should ensure that the only way to store data is
 
 
 ### Enforce encryption at rest
-You should ensure that the only way to store data is by using encryption. AWS KMS integrates seamlessly with [many AWS services](#aws-kms-integrations) to make it easier for you to encrypt all your data at rest. For example, in [Amazon S3](#ug-s3) you can set [default encryption on a bucket](#ug-s3-default-encryption) so that all new objects are automatically encrypted. Additionally, Amazon EC2 supports the enforcement of EBS encryption by setting [default encryption](#ug-ecs-ebs-encryption). You can use [AWS Managed Config Rules](#ug-config-managed-rules) to check automatically that you are using encryption, for example, for [EBS volumes](#cr-encrypted-volumes), [RDS instances](#cr-rds-storage-encrypted), and [S3 buckets](#cr-s3-default-encryption-kms).
+You should ensure that the only way to store data is by using encryption. AWS KMS integrates seamlessly with [many AWS services](#aws-kms-integrations) to make it easier for you to encrypt all your data at rest. For example, in [Amazon S3](#ug-s3) you can set [default encryption on a bucket](#ug-s3-default-encryption) so that all new objects are automatically encrypted. Additionally, Amazon EC2 supports the enforcement of EBS encryption by setting [default encryption](#ug-ec2-ebs-encryption). You can use [AWS Managed Config Rules](#ug-config-managed-rules) to check automatically that you are using encryption, for example, for [EBS volumes](#cr-encrypted-volumes), [RDS instances](#cr-rds-storage-encrypted), and [S3 buckets](#cr-s3-default-encryption-kms).
 
 
 ### Enforce access control
@@ -1299,7 +1334,7 @@ Ensure that you understand and audit the use of encryption keys to validate that
 
 
 ### Use mechanisms to keep people away from data
-Keep all users away from directly accessing sensitive data and systems under normal operational circumstances. For example, use a change management workflow to manage EC2 instances using tools instead of allowing direct access or a bastion host. This can be achieved using [AWS Systems Manager Automation](#ug-automation), which uses automation documents that contain steps you use to perform tasks. These documents can be stored in source control, be peer reviewed before running, and tested thoroughly to minimize risk compared to shell access. Business users could have a dashboard instead of direct access to a data store to run queries. Where CI/CD pipelines are not used, determine which controls and processes are required to adequately provide a normally disabled break-glass access mechanism.
+Keep all users away from directly accessing sensitive data and systems under normal operational circumstances. For example, use a change management workflow to manage EC2 instances using tools instead of allowing direct access or a bastion host. This can be achieved using [AWS Systems Manager Automation](#ug-sm-automation), which uses automation documents that contain steps you use to perform tasks. These documents can be stored in source control, be peer reviewed before running, and tested thoroughly to minimize risk compared to shell access. Business users could have a dashboard instead of direct access to a data store to run queries. Where CI/CD pipelines are not used, determine which controls and processes are required to adequately provide a normally disabled break-glass access mechanism.
 
 
 ### Automate data at rest protection
@@ -1336,7 +1371,7 @@ Use tools such as [Amazon GuardDuty](#ug-guardduty) to automatically detect susp
 ---
 # **AWS Reliability Recommendations**
 
-# Definitions
+# Reliability Definitions
 > Source: <https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/definitions.html>
 
 ## <a id='war-availability'>Availability</a>
@@ -1439,7 +1474,7 @@ Alerts can also be sent to [Amazon SNS](#ug-sns) topics, and then pushed to any 
 ### Real-time processing and alarming — Automate responses
 Use automation to take action when an event is detected, for example, to replace failed components.
 
-Alerts can trigger [AWS Auto Scaling](#ug-as-ec2) events, so that clusters react to changes in demand. Alerts can be sent to [Amazon SQS](#ug-sqs), which can serve as an integration point for third-party ticket systems. [AWS Lambda](#ug-lambda) can also subscribe to alerts, providing users an asynchronous serverless model that reacts to change dynamically. [AWS Config](#ug-config) continuously monitors and records your AWS resource configurations, and can trigger [AWS Systems Manager Automation](#ug-automation) to remediate issues.
+Alerts can trigger [AWS Auto Scaling](#ug-as-ec2) events, so that clusters react to changes in demand. Alerts can be sent to [Amazon SQS](#ug-sqs), which can serve as an integration point for third-party ticket systems. [AWS Lambda](#ug-lambda) can also subscribe to alerts, providing users an asynchronous serverless model that reacts to change dynamically. [AWS Config](#ug-config) continuously monitors and records your AWS resource configurations, and can trigger [AWS Systems Manager Automation](#ug-sm-automation) to remediate issues.
 
 ### Storage and Analytics
 Collect log files and metrics histories and analyze these for broader trends and workload insights.
@@ -1714,7 +1749,7 @@ Regularly test failover to DR to ensure that RTO and RPO are met.
 ### Manage configuration drift at the DR site or region
 Ensure that your infrastructure, data, and configuration are in a state of readiness at the DR site or Region. For example, check that AMIs and service quotas are up to date.
 
-[AWS Config](#ug-config) continuously monitors and records your AWS resource configurations. It can detect drift and trigger [AWS Systems Manager Automation](#ug-automation) to fix it and raise alarms. [AWS CloudFormation](#ug-cloudformation) can additionally detect drift in stacks you have deployed.
+[AWS Config](#ug-config) continuously monitors and records your AWS resource configurations. It can detect drift and trigger [AWS Systems Manager Automation](#ug-sm-automation) to fix it and raise alarms. [AWS CloudFormation](#ug-cloudformation) can additionally detect drift in stacks you have deployed.
 
 
 ### Automate recovery
@@ -2045,8 +2080,12 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Amazon Machine Images(AMI) <a id='ug-ec2-ami'/>
 > <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html>
 
-##### EBS Encryption <a id='ug-ecs-ebs-encryption'/>
+##### EBS Encryption <a id='ug-ec2-ebs-encryption'/>
 > <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html>
+
+##### Instance Metadata Service (IMDSv2) <a id='ug-ec2-imdsv2'/>
+> <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html>
+
 
 #### Amazon EC2 Image Builder <a id='ug-ec2-image-builder'/>
 > <https://docs.aws.amazon.com/imagebuilder/latest/userguide/what-is-image-builder.html>
@@ -2116,18 +2155,36 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### AWS Identity and Access Management <a id='ug-iam'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html>
 
-##### ABAC <a id='ug-iam-abac'/>
-> <https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_attribute-based-access-control.html>
-
 ##### Policies <a id='ug-iam-policy'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_access-management.html>
+
+##### Roles <a id='ug-iam-roles'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html>
 
 ##### SAML 2.0 <a id='ug-iam-saml2'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_saml.html>
 
+##### Temporary security credentials <a id='ug-iam-temporary-credentials'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html> 
+
+##### EC2 Instance Roles <a id='ug-iam-ec2-roles'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html>
+
+##### ABAC <a id='ug-iam-abac'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_attribute-based-access-control.html>
+
+##### Credential Reports <a id='ug-iam-credential-reports'/>
+> <https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/identity-management.html>
+
 
 #### Amazon Cognito <a id='ug-cognito'/>
 > <https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html>
+
+##### Identity Pools <a id='ug-cognito-identity-pools'/>
+> <https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html>
+
+##### Role-Based Access Control with Identity Pools <a id='ug-cognito-identity-pools-rbac'/>
+> <https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html>
 
 
 #### AWS Firewall Manager <a id='ug-firewall-manager'/>
@@ -2160,6 +2217,12 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Tag Editor <a id='ug-tag-editor'/>
 > <https://docs.aws.amazon.com/ARG/latest/userguide/tag-editor.html>
 
+#### AWS Secrets Manager <a id='ug-secrets-manager'/>
+> <https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html>
+
+##### Integrated Services <a id='ug-secrets-manager-integrated-services'/>
+> <https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating.html>
+
 #### AWS Shield <a id='ug-shield'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/shield-chapter.html>
 
@@ -2183,6 +2246,12 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ##### Configuring the AWS CLI to use AWS SSO <a id='ug-sso-cli'/>
 > <https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html>
+
+##### Permission sets <a id='ug-sso-permission-sets'/>
+> <https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsets.html>
+
+##### MFA <a id='ug-sso-mfa'/>
+> <https://docs.aws.amazon.com/singlesignon/latest/userguide/enable-mfa.html>
 
 #### AWS WAF <a id='ug-waf'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html>
@@ -2248,6 +2317,9 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### AWS Config <a id='ug-config'/>
 > <https://docs.aws.amazon.com/config/latest/developerguide/WhatIsConfig.html>
 
+##### Config Rules <a id='ug-config-rules'/>
+> <https://docs.aws.amazon.com/config/latest/developerguide/evaluate-config.html>
+
 ##### Managed Rules <a id='ug-config-managed-rules'/>
 > <https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html>
 
@@ -2257,14 +2329,15 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### AWS Systems Manager <a id='ug-systems-manager'/>
 > <https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html>
 
-#### Patch Manager <a id='ug-patch-manager'/>
+##### Patch Manager <a id='ug-patch-manager'/>
 > <https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-patch.html>
 
-#### Session Manager <a id='ug-session-manager'/>
+##### Session Manager <a id='ug-session-manager'/>
 > <https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html>
 
-#### Automation <a id='ug-automation'/>
+##### Systems Manager Automation <a id='ug-sm-automation'/>
 > <https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation.html>
+
 
 #### AWS Organizations <a id='ug-organizations'/>
 > <https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html>
