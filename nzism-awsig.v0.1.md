@@ -618,8 +618,7 @@ No applicable AWS guidance
 You must limit access to gateway administration functions.
 
 ##### Agency Guidance
-Dummy reference to [Patch Manager 1](#patch-manager) and [Patch Manager 2](#ug-patch-manager).
-
+TO DO
 
 
 #### 19.1.19.C.05.
@@ -1086,9 +1085,6 @@ Periodic validation, preferably through an automated tool, is necessary to verif
 ### Store and use secrets securely
 For credentials that are not IAM-related and cannot take advantage of temporary credentials, such as database logins, use a service that is designed to handle management of secrets, such as [AWS Secrets Manager](#ug-secrets-manager). Secrets Manager makes it easy to manage, rotate, and securely store encrypted secrets using [supported services](#ug-secrets-manager-integrated-services). Calls to access the secrets are logged in [CloudTrail](#ug-cloudtrail) for auditing purposes, and IAM permissions can grant least-privilege access to them. 
 
-
-### Patch Manager
-Dummy content
 
 
 ## Permissions Management
