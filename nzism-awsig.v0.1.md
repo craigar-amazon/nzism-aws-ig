@@ -618,7 +618,7 @@ No applicable AWS guidance
 You must limit access to gateway administration functions.
 
 ##### Agency Guidance
-
+Dummy reference to [Patch Manager 1](#patch-manager) and [Patch Manager 2](#ug-patch-manager).
 
 
 
@@ -1086,6 +1086,9 @@ Periodic validation, preferably through an automated tool, is necessary to verif
 ### Store and use secrets securely
 For credentials that are not IAM-related and cannot take advantage of temporary credentials, such as database logins, use a service that is designed to handle management of secrets, such as [AWS Secrets Manager](#ug-secrets-manager). Secrets Manager makes it easy to manage, rotate, and securely store encrypted secrets using [supported services](#ug-secrets-manager-integrated-services). Calls to access the secrets are logged in [CloudTrail](#ug-cloudtrail) for auditing purposes, and IAM permissions can grant least-privilege access to them. 
 
+
+### Patch Manager
+Dummy content
 
 
 ## Permissions Management
@@ -2320,7 +2323,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Config Rules <a id='ug-config-rules'/>
 > <https://docs.aws.amazon.com/config/latest/developerguide/evaluate-config.html>
 
-##### Managed Rules <a id='ug-config-managed-rules'/>
+##### Managed Config Rules <a id='ug-config-managed-rules'/>
 > <https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html>
 
 #### AWS Health <a id='ug-health'/>
