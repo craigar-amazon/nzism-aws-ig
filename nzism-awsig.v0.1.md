@@ -1088,7 +1088,58 @@ For credentials that are not IAM-related and cannot take advantage of temporary 
 
 
 ## Permissions Management
-TODO
+> Source: <https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/permissions-management.html>
+
+You should manage permissions to control access to human and machine identities that require access to AWS and your workloads. Permissions control who can access what, and under what conditions. Set permissions to specific human and machine identities to grant access to specific service actions on specific resources. Additionally, specify conditions that must be true for access to be granted. For example, you can allow developers to create new Lambda functions, but only in a specific Region. When managing your AWS environments at scale, adhere to the following best practices to ensure that identities only have the access they need and nothing more.
+
+There are a number of ways to grant access to different types of resources. One way is by using different policy types. 
+
+[Identity-based policies](#ug-iam-policy-identity) in IAM are *managed* or *inline*, and attach to IAM identities, including users, groups, or roles. These policies let you specify what that identity can do (its permissions). Identity-based policies can be further categorized:
+> * *Managed policies*: Standalone identity-based policies that you can attach to multiple users, groups, and roles in your AWS account. There are two types of managed policies:
+>   * *AWS-managed policies*: Managed policies that are created and managed by AWS.
+>   * *Customer-managed policies*: Managed policies that you create and manage in your AWS account. Customer-managed policies provide more precise control over your policies than AWS-managed policies.
+> * *Inline policies*: Policies that you add directly to a single user, group, or role. Inline policies maintain a strict one-to-one relationship between a policy and an identity. Inline policies are deleted when you delete the identity.
+
+In most cases, you should create your own customer-managed policies following the [principle of least privilege](#ug-iam-least-privilege).
+
+[Resource-based policies](#ug-iam-policy-resource) are attached to a resource. For example, an S3 bucket policy is a resource-based policy. These policies grant permission to a principal that can be in the same account as the resource or in another account. For a list of services that support resource-based policies, see [AWS services that work with IAM](#ug-iam-services).
+
+[Permissions boundaries](#ug-iam-policy-boundaries) use a managed policy to set the maximum permissions that an administrator can set. This enables you to delegate the ability to create and manage permissions to developers, such as the creation of an IAM role, but limit the permissions they can grant so that they cannot escalate their permission using what they have created.
+
+[Attribute-based access control](#ug-iam-abac) (ABAC) enables you to grant permissions based on attributes. In AWS, these are called tags. Tags can be attached to IAM principals (users or roles) and to AWS resources. Using IAM policies, administrators can create a reusable policy that applies permissions based on the attributes of the IAM principal. For example, as an administrator you can use a single IAM policy that grants developers in your organization access to AWS resources that match the developers’ project tags. As the team of developers adds resources to projects, permissions are automatically applied based on attributes. As a result, no policy update is required for each new resource.
+
+[Organizations service control policies](#ug-iam-policy-scp) (SCP) define the maximum permissions for account members of an organization or organizational unit (OU). SCPs limit permissions that identity-based policies or resource-based policies grant to entities (users or roles) within the account, but do not grant permissions.
+
+[Session policies](#ug-iam-policy-session) assume a role or a federated user. Pass session policies when using the AWS CLI or AWS API Session policies to limit the permissions that the role or user's identity-based policies grant to the session. These policies limit permissions for a created session, but do not grant permissions.
+
+### Define permission guardrails for your organization
+As you grow and manage additional workloads in AWS, you should separate these workloads using accounts and manage those accounts using [AWS Organizations](#ug-organizations). We recommend that you establish common permission guardrails that restrict access to all identities in your organization. For example, you can restrict access to specific AWS Regions, or prevent your team from deleting common resources, such as an IAM role used by your central security team. You can get started by implementing example [service control policies](#ug-scp), such as preventing users from disabling key services.
+
+You can use AWS Organizations to group accounts and set common controls on each group of accounts. To set these common controls, you can use [services integrated](#ug-organizations-services) with AWS Organizations. Specifically, you can use service control policies (SCPs) to restrict access to group of accounts. SCPs use the IAM policy language and enable you to establish controls that all IAM principals (users and roles) adhere to. You can restrict access to specific service actions, resources and based on specific condition to meet the access control needs of your organization. If necessary, you can define exceptions to your guardrails. For example, you can restrict service actions for all IAM entities in the account except for a specific administrator role.
+
+
+### Grant least privilege access
+Establishing a principle of [least privilege](#ug-iam-least-privilege) ensures that identities are only permitted to perform the most minimal set of functions necessary to fulfill a specific task, while balancing usability and efficiency. Operating on this principle limits unintended access and helps ensure that you can audit who has access to which resources. In AWS, identities have no permissions by default with the exception of the root user, which should only be used for a few [specific tasks](#aws-tasks-root-credentials).
+
+You use policies to explicitly grant permissions attached to IAM or resource entities, such as an IAM role used by federated identities or machines, or resources (for example, S3 buckets). When you create and attach a policy, you can specify the service actions, resources, and conditions that must be true for AWS to allow access. AWS supports a variety of conditions to help you scope down access. For example, using the `PrincipalOrgID` [condition key](#ug-iam-global-condition-key), the identifier of the AWS Organizations is verified so access can be granted within your AWS Organization. You can also control requests that AWS services make on your behalf, like [AWS CloudFormation](#ug-cloudformation) creating an AWS Lambda function, by using the `CalledVia` condition key. This enables you to set granular permissions for your human and machine identities across AWS.
+
+AWS also has capabilities that enable you to scale your permissions management and adhere to least privilege. 
+
+
+### Analyze public and cross account access
+In AWS, you can grant access to resources in another account. You grant direct cross-account access using policies attached to resources (for example, S3 bucket policies) or by allowing an identity to assume an IAM role in another account. When using resource policies, you want to ensure you grant access to identities in your organization and are intentional about when you make a resource public. Making a resource public should be used sparingly, as this action allows anyone to access the resource. [IAM Access Analyzer](#ug-iam-access-analyzer) uses mathematical methods - that is, [provable security](#aws-provable-security) - to identify all access paths to a resource from outside of its account. It reviews resource policies continuously, and reports findings of public and cross-account access to make it easy for you to analyze potentially broad access.
+
+
+### Share resources securely
+As you manage workloads using separate accounts, there will be cases where you need to share resources between those accounts. We recommend that you share resources using [AWS Resource Access Manager](#ug-ram) (AWS RAM). This service enables you to easily and securely share AWS resources within your AWS Organization and Organizational Units. Using AWS RAM, access to shared resources is automatically granted or revoked as accounts are moved in and out of the Organization or Organization Unit with which they are shared. This helps ensure that resources are only shared with the accounts that you intend.
+
+
+### Reduce permissions continuously
+Sometimes, when teams and projects are just getting started, you might choose to grant broad access (in a dev/test environment) to inspire innovation and agility. We recommend that you evaluate access continuously and, especially in a production environment, restrict access to only the permissions required and achieve least privilege. AWS provides access analysis capabilities to help you identify unused access. To help you identify unused users and roles, AWS analyzes access activity and provides access key and role [last used information](#ug-iam-last-accessed). You can use the last accessed timestamp to identify unused users and roles, and remove them. Moreover, you can review service and action last accessed information to identify and tighten permissions for specific users and roles. For example, you can use last accessed information to identify the specific S3 actions that your application role requires and restrict access to only those. These feature are available in the console and programmatically to enable you to incorporate them into your infrastructure workflows and automated tools.
+
+
+### Establish emergency access process
+You should have a process that allows emergency access to your workload, in particular your AWS accounts, in the unlikely event of an automated process or pipeline issue. This process could include a combination of different capabilities, for example, an emergency AWS cross-account role for access, or a specific process for administrators to follow to validate and approve an emergency request. 
 
 
 
@@ -2027,6 +2078,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ### <a id='aws-cloudendure-dr'>CloudEndure Disaster Recovery</a>
 > <https://aws.amazon.com/cloudendure-disaster-recovery/>
 
+
 ### <a id='aws-general'>AWS General Reference</a>
 > <https://docs.aws.amazon.com/general/latest/gr/Welcome.html>
 
@@ -2036,11 +2088,16 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### <a id='aws-tagging-resources'>Tagging AWS Resources</a>
 > <https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html>
 
+#### <a id='aws-tasks-root-credentials'>Tasks that require root credentials</a>
+> <https://docs.aws.amazon.com/general/latest/gr/root-vs-iam.html#aws_tasks-that-require-root>
+
+
 ### <a id='aws-kms'>AWS Key Management Service</a>
 > <https://aws.amazon.com/kms/features/>
 
 #### <a id='aws-kms-integrations'>Services Integrated With KMS</a>
 > <https://aws.amazon.com/kms/features/#integration>
+
 
 ### <a id='aws-waf'>AWS Web Application Firewall</a> 
 > <https://aws.amazon.com/waf/>
@@ -2050,6 +2107,10 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 #### <a id='aws-waf-delivery-partners'>Delivery Partners</a>
 > <https://aws.amazon.com/waf/partners/>
+
+
+### <a id='aws-provable-security'>Provable Security</a>
+> <https://aws.amazon.com/security/provable-security/>
 
 
 ## AWS Whitepapers
@@ -2157,8 +2218,26 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Policies <a id='ug-iam-policy'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_access-management.html>
 
+##### Identity-based policies <a id='ug-iam-policy-identity'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_id-based>
+
+##### Resource-based policies <a id='ug-iam-policy-resource'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_resource-based>
+
+##### Permissions boundaries <a id='ug-iam-policy-boundaries'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_bound>
+
+##### Service control policies (SCPs) <a id='ug-iam-policy-scp'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_scp>
+
+##### Session policies <a id='ug-iam-policy-session'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session>
+
 ##### Roles <a id='ug-iam-roles'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html>
+
+##### Global condition key <a id='ug-iam-global-condition-key'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-keys.html>
 
 ##### SAML 2.0 <a id='ug-iam-saml2'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_saml.html>
@@ -2172,8 +2251,21 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### ABAC <a id='ug-iam-abac'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_attribute-based-access-control.html>
 
+##### Least Privilege <a id='ug-iam-least-privilege'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege>
+
+##### AWS Services that work with IAM <a id='ug-iam-services'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_aws-services-that-work-with-iam.html>
+
+##### IAM Access Analyzer <a id='ug-iam-access-analyzer'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/what-is-access-analyzer.html>
+
 ##### Credential Reports <a id='ug-iam-credential-reports'/>
 > <https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/identity-management.html>
+
+##### Last accessed information <a id='ug-iam-last-accessed'/>
+> <https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html>
+
 
 
 #### Amazon Cognito <a id='ug-cognito'/>
@@ -2349,6 +2441,9 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ##### Tag Policies <a id='ug-tag-policies'/>
 > <https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html>
+
+##### Integrated Services <a id='ug-organizations-services'/>
+> <https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html>
 
 ### *Developer Tools*
 
