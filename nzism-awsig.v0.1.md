@@ -552,11 +552,12 @@ You must ensure that all gateways connecting networks in different security doma
 * are protected by authentication, logging and audit of all physical access to gateway components; and
 * have all controls tested to verify their effectiveness after any changes to their configuration.
 
-You are responsible for implementing all of these controls within [on-premises](#dfn-op) networks. However, the [VPCs](#ug-vpc) within your AWS environment inherit the following controls from AWS:
-* By design, communications paths into and out of VPCs are controlled by Gateways (sub-types listed below), [VPC Endpoints](#ug-vpc-endpoints), [PrivateLink](#ug-vpc-privatelink), and [Peering](#ug-vpc-peering). The most commonly used gateway types are:
+You are responsible for implementing all of these controls within [on-premises](#dfn-op) networks. Within your AWS environment, [VPCs](#ug-vpc) inherit the following controls from AWS:
+* By design, communications paths into and out of VPCs are controlled by Gateways (common sub-types listed below), [VPC Endpoints](#ug-vpc-endpoints), [PrivateLink](#ug-vpc-privatelink), and [Peering](#ug-vpc-peering). The most commonly used gateway types are:
 > * [Internet Gateways](#ug-vpc-igw),
 > * [Transit Gateways](#ug-tgw),
 > * [Virtual Private Gateways](#ug-vpn-s2s)
+> * [Direct Connect Gateways](#ug-dx-gw)
 * VPCs are configured through AWS-managed API end-points (control plane). All VPC configuration requests must be authenticated and authorized by [AWS Identity and Access Management](#ug-iam).
 
 
@@ -615,14 +616,45 @@ No applicable AWS guidance
 #### CID 3660
 
 ##### Agency Responsibilities
-You must limit access to gateway administration functions.
+You must limit access to gateway administration functions. You are responsible for implementing this control within [on-premises](#dfn-op) networks. Within your AWS environment, [VPCs](#ug-vpc) inherit the following controls from AWS:
+* By design, communications paths into and out of VPCs are controlled by Gateways (common sub-types listed below), [VPC Endpoints](#ug-vpc-endpoints), [PrivateLink](#ug-vpc-privatelink), and [Peering](#ug-vpc-peering). The most commonly used gateway types are:
+> * [Internet Gateways](#ug-vpc-igw),
+> * [Transit Gateways](#ug-tgw),
+> * [Virtual Private Gateways](#ug-vpn-s2s)
+> * [Direct Connect Gateways](#ug-dx-gw)
+* VPCs are configured through AWS-managed API end-points (control plane). All VPC configuration requests must be authenticated and authorized by [AWS Identity and Access Management](#ug-iam).
+
 
 ##### Agency Guidance
-TO DO
+You should [grant least privilege access](#grant-least-privilege-access) to the identities responsible for configuring the AWS resources that control the communications paths into and out of VPCs. These resources include:
+* [Route Tables](#ug-vpc-route-tables),
+* [VPC Endpoints](#ug-vpc-endpoints),
+* [PrivateLink](#ug-vpc-privatelink),
+* [Peering Connections](#ug-vpc-peering),
+* [Internet Gateways](#ug-vpc-igw),
+* [Transit Gateways](#ug-tgw),
+* [Virtual Private Gateways](#ug-vpn-s2s)
+* [Direct Connect Gateways](#ug-dx-gw)
+
+You should also [define permission guardrails](#define-permission-guardrails-for-your-organization) to protect common security and networking resources such as centralised logs and on-premises connectivity.
+
+Consider implementing this control using the [Gateway Security Using Firewall Appliances](#apc-gsfa) architecture pattern. In this pattern, a security boundary is created between application SDLC accounts as consumers of the gateway services, and the production network account as the provider of the gateway service. This delegation of responsibilities is enforced by a [Service Control Policy (SCP)](#ug-scp) which denies VPC egress configuration permission to application SDLC accounts.
 
 
 #### 19.1.19.C.05.
 #### CID 3676
+
+##### Agency Responsibilities
+You should separate roles for the administration of gateways. For example, separate network and security policy configuration roles.
+
+Refer to [CID 3660](#cid-3660) for your specific responsibilities.
+
+##### Agency Guidance
+Refer to [CID 3660](#cid-3660) for foundational guidance.
+
+In addition, you should consider using [permissions boundaries](#ug-iam-policy-boundaries) to implement a segregation of duties. For example, a network administrator may require permission to create an [IAM role](#ug-iam-roles) for a networking resource, but a security administrator can constrain the network administrator with a permissions boundary that sets the maximum permissions that can be granted to that role.
+
+
 
 
 ### 19.1.20. System user authentication
@@ -630,11 +662,31 @@ TO DO
 #### 19.1.20.C.01.
 #### CID 3683
 
+##### Agency Responsibilities
+You must authenticate system users to all classified networks accessed through gateways. You are responsible for implementing this control within both [on-premises](#dfn-op) networks and your AWS environment.
+
+##### Agency Guidance
+You should [rely on a centralised identity provider](#rely-on-a-centralized-identity-provider), and [use strong sign-in mechanisms](#use-strong-sign-in-mechanisms) such as MFA, when authenticating system users for access to classified networks through gateways.
+
+
 #### 19.1.20.C.02.
 #### CID 3685
 
+##### Agency Responsibilities
+You must ensure that only authenticated and authorised system users can use the gateway. You are responsible for implementing this control within both [on-premises](#dfn-op) networks and your AWS environment.
+
+##### Agency Guidance
+Refer to [CID 3683](#cid-3683) for guidance.
+
+
 #### 19.1.20.C.03.
 #### CID 3686
+
+##### Agency Responsibilities
+You should use multi-factor authentication for access to networks and gateways. You are responsible for implementing this control within both [on-premises](#dfn-op) networks and your AWS environment.
+
+##### Agency Guidance
+Refer to [CID 3683](#cid-3683) for guidance.
 
 
 ### 19.1.21. IT equipment authentication
@@ -649,6 +701,8 @@ No applicable AWS guidance
 
 #### 19.1.23.C.01.
 #### CID 3712
+
+##### Agency Responsibilities
 
 
 
@@ -877,6 +931,8 @@ Public application load balancers should also use [WAF](#ug-waf) to allow or blo
 | [3562](#cid-3562) | Firewall Logs, SCP, Flow Logs, GuardDuty
 | [3578](#cid-3578) | Security Group Rules, Flow Logs, NAT Gateway
 | [3623](#cid-3623) | Internet-facing ALB, Security Group Rules
+| [3660](#cid-3660) | Centralised TGW and IGW, SCP
+| [3676](#cid-3676) | Centralised TGW and IGW, SCP
 | [3815](#cid-3815) | GuardDuty
 | [3875](#cid-3875) | Firewall Logs, GuardDuty Logs, Flow Logs
 | [4333](#cid-4333) | Firewall Rules (L7), Security Group Rules (L4)
@@ -1416,6 +1472,36 @@ Use tools such as [Amazon GuardDuty](#ug-guardduty) to automatically detect susp
 
 # Incident Response
 > Source: <https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/incident-response.html>
+
+Even with mature preventive and detective controls, your organisation should implement mechanisms to respond to and mitigate the potential impact of security incidents. Your preparation strongly affects the ability of your teams to operate effectively during an incident, to isolate, contain and perform forensics on issues, and to restore operations to a known good state. Putting in place the tools and access ahead of a security incident, then routinely practicing incident response through game days, helps ensure that you can recover while minimizing business disruption.
+
+* [Design goals of a cloud response](#design-goals-of-a-cloud-response)
+* [Educate your security teams]
+* [Prepare for incidents]
+* [Simulate security events]
+* [Iterate on your incident response]
+
+
+## Design goals of a cloud response
+Although the general processes and mechanisms of incident response, such as those defined in the [NIST SP 800-61 Computer Security Incident Handling Guide](#ind-nist-sp800-61), remain true, we encourage you to evaluate these specific design goals that are relevant to responding to security incidents in a cloud environment:
+
+* *Establish response objectives*: Work with your stakeholders, legal counsel, and organizational leadership to determine the goal of responding to an incident. Some common goals include containing and mitigating the issue, recovering the affected resources, preserving data for forensics, and attribution.
+* *Document plans*: Create plans to help you respond to, communicate during, and recover from an incident.
+* *Respond using the cloud*: Implement your response patterns where the event and data occurs.
+* *Know what you have and what you need*: Preserve logs, snapshots, and other evidence by copying them to a centralized security cloud account. Use tags, metadata, and mechanisms that enforce retention policies. For example, you might choose to use the Linux dd command or a Windows equivalent to make a complete copy of the data for investigative purposes.
+* *Use redeployment mechanisms*: If a security anomaly can be attributed to a misconfiguration, the remediation might be as simple as removing the variance by redeploying the resources with the proper configuration. When possible, make your response mechanisms safe to execute more than once and in environments in an unknown state.
+* *Automate where possible*: As you see issues or incidents repeat, build mechanisms that programmatically triage and respond to common situations. Use human responses for unique, new, and sensitive incidents.
+* *Choose scalable solutions*: Strive to match the scalability of your organization's approach to cloud computing, and reduce the time between detection and response.
+* *Learn and improve your process*: When you identify gaps in your process, tools, or people, implement plans to fix them. Simulations are safe methods to find gaps and improve processes.
+
+In AWS, there are a number of different approaches you can use when addressing incident response. The following section describes how to use these approaches:
+
+* *Educate* your security operations and incident response staff about cloud technologies and how your organization intends to use them.
+* *Prepare* your incident response team to detect and respond to incidents in the cloud, enable detective capabilities, and ensure appropriate access to the necessary tools and cloud services. Additionally, prepare the necessary runbooks, both manual and automated, to ensure reliable and consistent responses. Work with other teams to establish expected baseline operations, and use that knowledge to identify deviations from those normal operations.
+* *Simulate* both expected and unexpected security events within your cloud environment to understand the effectiveness of your preparation.
+* *Iterate* on the outcome of your simulation to improve the scale of your response posture, reduce time to value, and further reduce risk.
+
+
 
 
 ---
@@ -2476,6 +2562,10 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Virtual Interfaces <a id='ug-dx-vif'/>
 > <https://docs.aws.amazon.com/directconnect/latest/UserGuide/create-vif.html>
 
+##### Direct Connect Gateways <a id='ug-dx-gw'/>
+> <https://docs.aws.amazon.com/directconnect/latest/UserGuide/direct-connect-gateways-intro.html>
+
+
 #### Elastic Load Balancing <a id='ug-lb'/>
 
 #### Application Load Balancer <a id='ug-alb'/>
@@ -2513,6 +2603,9 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ##### Security Groups <a id='ug-vpc-security-groups'/>
 > <https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html>
+
+##### Route Tables <a id='ug-vpc-route-tables'/>
+> <https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html>
 
 ##### Internet Gateways <a id='ug-vpc-igw'/>
 > <https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html>
@@ -2615,6 +2708,12 @@ You can use AWS WAF to create custom, application-specific rules that block atta
 
 ## Industry Sources
 
+### NIST
+
+#### Computer Security Incident Handling Guide (SP 800-61) <a id='ind-nist-sp800-61'/>
+> <https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final>
+
+
 ### Cloud Security Alliance
 
 #### About <a id='ind-csa-about'/>
@@ -2625,6 +2724,7 @@ You can use AWS WAF to create custom, application-specific rules that block atta
 
 #### AWS CSA Assessment <a id='ind-csa-aws'/>
 > <http://aws.amazon.com/compliance/csa/>
+
 
 ### Center for Internet Security
 
