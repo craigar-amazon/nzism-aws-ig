@@ -5,11 +5,11 @@
 >   * [AWS Terms](#dfn-aws)
 >   * [General Terms](#dfn-general)
 > * [NZISM Control Objective Index](#nzism-control-objective-index)
->   * [1. About information security]
->   * [2. Information Security within Government]
->   * [3. Information security governance - roles and responsibilities]
->   * [4. System Certification and Accreditation]
->   * [5. Information security documentation]
+>   * [1. About information security](#nzism-01)
+>   * [2. Information Security within Government](#nzism-02)
+>   * [3. Information security governance - roles and responsibilities](#nzism-03)
+>   * [4. System Certification and Accreditation](#nzism-04)
+>   * [5. Information security documentation](#nzism-05)
 >   * [6. Information security monitoring](#nzism-06)
 >     * [6.1. Information Security Reviews](#nzism-06-1)
 >     * [6.2. Vulnerability Analysis](#nzism-06-2)
@@ -27,8 +27,9 @@
 >     * [8.5. Tamper Evident Seals](#nzism-08-5)
 >   * [19. Gateway security](#nzism-19)
 >     * [19.1. Gateways](#nzism-19-1)
->     * [19.2. Cross Domain Solutions]
+>     * [19.2. Cross Domain Solutions](#nzism-19-2)
 >   * [22. Enterprise systems security](#nzism-22)
+>     * [22.1. Cloud Computing](#nzism-22-1)
 > * Architecture Pattern Catalogue for NZISM
 >   * [Gateway Security Using Firewall Appliances](#apc-gsfa)
 > * AWS Well-Architected Recommendations
@@ -213,19 +214,19 @@ See [Developing Runbooks](#article-developing-runbooks) for implementation guida
 # *NZISM Control Objective Index*
 
 
-# 1. About information security
+# <a id='nzism-01'>1. About information security</a>
 
 #### Responsibilities
 This section is for the guidance of agencies. There are no applicable AWS responsibilities.
 
 
-# 2. Information Security within Government
+# <a id='nzism-02'>2. Information Security within Government</a>
 
 #### Responsibilities
 This section is for the guidance of agencies. There are no applicable AWS responsibilities.
 
 
-# 3. Information security governance - roles and responsibilities
+# <a id='nzism-03'>3. Information security governance - roles and responsibilities</a>
 
 #### Responsibilities
 All controls under Section 3 are the responsibility of agencies. There are no applicable AWS responsibilities.
@@ -234,13 +235,13 @@ All controls under Section 3 are the responsibility of agencies. There are no ap
 You should ensure that you have a good understanding of [Security Governance](#security-governance) in the context of the [AWS Shared Responsibility Model](#dfn-srm).
 
 
-# 4. System Certification and Accreditation
+# <a id='nzism-04'>4. System Certification and Accreditation</a>
 
 #### Responsibilities
 This section is for the guidance of agencies. There are no applicable AWS responsibilities.
 
 
-# 5. Information security documentation
+# <a id='nzism-05'>5. Information security documentation</a>
 
 #### Responsibilities
 This section is for the guidance of agencies. There are no applicable AWS responsibilities.
@@ -749,7 +750,7 @@ You should ensure that testing of security measures is performed at random inter
 Even with mature preventive and detective controls, you should implement mechanisms to [respond to](#incident-response) and mitigate the potential impact of security incidents. Your [preparation](#prepare-for-incidents) strongly affects the ability of your teams to operate effectively during an incident, to isolate, contain and perform forensics on issues, and to restore operations to a known good state. Putting in place the tools and access ahead of a security incident, then routinely [practicing incident response](#simulate-security-events) through game days, helps ensure that you can recover while minimising business disruption.
 
 
-## 19.2. Cross Domain Solutions
+## <a id='nzism-19-2'>19.2. Cross Domain Solutions</a>
 
 #### Responsibilities
 This section is for the guidance of agencies. There are no applicable AWS responsibilities.
@@ -763,7 +764,7 @@ This section is for the guidance of agencies. There are no applicable AWS respon
 
 # <a id='nzism-22'>22. Enterprise systems security</a>
 
-## 22.1. Cloud Computing
+## <a id='nzism-22-1'>22.1. Cloud Computing</a>
 
 #### AWS Responsibilities
 AWS is responsible for ensuring that agencies have access to current risk assessment information for the AWS platform. Sources of risk assessment information include:
