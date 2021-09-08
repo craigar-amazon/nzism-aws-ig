@@ -724,8 +724,10 @@ No applicable AWS guidance
 #### CID 3712
 
 ##### Agency Responsibilities
+You should ensure that testing of security measures is performed at random intervals no more than six months apart.  You are responsible for implementing this control within both [on-premises](#dfn-op) networks and your AWS environment.
 
-
+##### Agency Guidance
+Even with mature preventive and detective controls, you should implement mechanisms to [respond to](#incident-response) and mitigate the potential impact of security incidents. Your [preparation](#prepare-for-incidents) strongly affects the ability of your teams to operate effectively during an incident, to isolate, contain and perform forensics on issues, and to restore operations to a known good state. Putting in place the tools and access ahead of a security incident, then routinely [practicing incident response](#simulate-security-events) through game days, helps ensure that you can recover while minimising business disruption.
 
 
 # 20. Data management
@@ -1569,7 +1571,7 @@ It’s important for your incident responders to have an understanding of when a
 
 Your response team can combine tools, such as [AWS System Manager](#ug-systems-manager), [Amazon EventBridge](#ug-eventbridge), and AWS Lambda, to automatically run forensic tools within an operating system and [VPC traffic mirroring](#ug-vpc-traffic-mirroring) to obtain a network packet capture, to gather non-persistent evidence. Conduct other activities, such as log analysis or analyzing disk images, in a dedicated security account with customized forensic workstations and tools accessible to your responders.
 
-Routinely ship relevant logs to a data store that provides high durability and integrity. Responders should have access to those logs. AWS offers several tools that can make log investigation easier, such as Amazon Athena, Amazon Elasticsearch Service (Amazon ES), and [CloudWatch Log Insights](#ug-cwl-insights). Additionally, preserve evidence securely using S3 Object Lock. This service follows the WORM (write-once-read-many) model and prevents objects from being deleted or overwritten for a defined period of time. As forensic investigation techniques require specialist training, you might need to engage external specialists. 
+Routinely ship relevant logs to a data store that provides high durability and integrity. Responders should have access to those logs. AWS offers several tools that can make log investigation easier, such as [Amazon Athena](#ug-athena), [Amazon Elasticsearch Service](#ug-es), and [CloudWatch Log Insights](#ug-cwl-insights). Additionally, preserve evidence securely using [S3 Object Lock](#ug-s3-object-lock). This service follows the WORM (write-once-read-many) model and prevents objects from being deleted or overwritten for a defined period of time. As forensic investigation techniques require specialist training, you might need to engage external specialists. 
 
 
 
@@ -2331,7 +2333,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ## AWS User Guides
 
-### *Compute*
+### Compute
 
 #### Amazon EC2 <a id='ug-ec2'/>
 > <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html>
@@ -2364,7 +2366,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Site Requirements <a id='ug-outposts-site-requirements'/>
 > <https://docs.aws.amazon.com/outposts/latest/userguide/outposts-requirements.html#facility-networking>
 
-### *Containers*
+### Containers
 
 #### Amazon ECR <a id='ug-ecr'/>
 > <https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html>
@@ -2375,7 +2377,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### Amazon ECS <a id='ug-ecs'/>
 > <https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html>
 
-### *Storage*
+### Storage
 
 #### Amazon S3 <a id='ug-s3'/>
 > <https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html>
@@ -2392,7 +2394,11 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Replication <a id='ug-s3-replication'/>
 > <https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication.html>
 
-### *Database*
+##### Object Lock <a id='ug-s3-object-lock'/>
+> <https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html>
+
+
+### Database
 
 #### Amazon DynamoDB <a id='ug-dynamo'/>
 > <https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html>
@@ -2409,7 +2415,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Global Databases <a id='ug-aurora-global'/>
 > <https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html>
 
-### *Security, Identity, and Compliance*
+### Security, Identity, and Compliance
 
 #### AWS Identity and Access Management <a id='ug-iam'/>
 > <https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html>
@@ -2556,7 +2562,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 > <https://docs.aws.amazon.com/waf/latest/developerguide/waf-managed-rule-groups.html>
 
 
-### *Cryptography and PKI*
+### Cryptography and PKI
 
 #### AWS CloudHSM <a id='ug-hsm'/>
 > <https://docs.aws.amazon.com/cloudhsm/latest/userguide/introduction.html>
@@ -2576,7 +2582,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### AWS Signer <a id='ug-signer'/>
 > <https://docs.aws.amazon.com/signer/latest/developerguide/Welcome.html>
 
-### *Management and Governance*
+### Management and Governance
 
 #### AWS Autoscaling
 
@@ -2658,7 +2664,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Integrated Services <a id='ug-organizations-services'/>
 > <https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html>
 
-### *Developer Tools*
+### Developer Tools
 
 #### AWS CodePipeline <a id='ug-codepipeline'/>
 > <https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html>
@@ -2666,7 +2672,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### AWS X-Ray <a id='ug-xray'/>
 > <https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html>
 
-### *Networking and Content Delivery*
+### Networking and Content Delivery
 
 #### Amazon API Gateway <a id='ug-apig'/>
 > <https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html>
@@ -2766,8 +2772,16 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 > <https://docs.aws.amazon.com/vpn/latest/s2svpn/VPC_VPN.html>
 
 
+### Analytics
 
-### *Application Integration*
+#### Amazon Athena <a id='ug-athena'/>
+> <https://docs.aws.amazon.com/athena/latest/ug/what-is.html>
+
+#### Amazon Elasticsearch <a id='ug-es'/>
+> <https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/what-is-amazon-elasticsearch-service.html>
+
+
+### Application Integration
 
 #### Amazon EventBridge <a id='ug-eventbridge'/>
 > <https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html>
