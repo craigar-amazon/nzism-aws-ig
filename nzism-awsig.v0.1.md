@@ -5,11 +5,11 @@
 >   * [AWS Terms](#dfn-aws)
 >   * [General Terms](#dfn-general)
 > * [NZISM Control Objective Index](#nzism-control-objective-index)
->   * 1. About information security
->   * 2. Information Security within Government
->   * 3. Information security governance - roles and responsibilities
->   * 4. System Certification and Accreditation
->   * 5. Information security documentation
+>   * [1. About information security]
+>   * [2. Information Security within Government]
+>   * [3. Information security governance - roles and responsibilities]
+>   * [4. System Certification and Accreditation]
+>   * [5. Information security documentation]
 >   * [6. Information security monitoring](#nzism-06)
 >     * [6.1. Information Security Reviews](#nzism-06-1)
 >     * [6.2. Vulnerability Analysis](#nzism-06-2)
@@ -27,7 +27,7 @@
 >     * [8.5. Tamper Evident Seals](#nzism-08-5)
 >   * [19. Gateway security](#nzism-19)
 >     * [19.1. Gateways](#nzism-19-1)
->     * 19.2. Cross Domain Solutions
+>     * [19.2. Cross Domain Solutions]
 >   * [22. Enterprise systems security](#nzism-22)
 > * Architecture Pattern Catalogue for NZISM
 >   * [Gateway Security Using Firewall Appliances](#apc-gsfa)
