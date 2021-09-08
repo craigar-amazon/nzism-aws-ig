@@ -8,7 +8,13 @@
 >   * [6. Information security monitoring](#nzism-06)
 >   * [7. Information Security Incidents](#nzism-07)
 >   * [8. Physical Security](#nzism-08)
+>     * [8.1. Facilities](#nzism-08-1)
+>     * [8.2. Servers And Network Devices](#nzism-08-2)
+>     * [8.3. Network Infrastructure](#nzism-08-3)
+>     * [8.4. IT Equipment](#nzism-08-4)
+>     * [8.5. Tamper Evident Seals](#nzism-08-5)
 >   * [19. Gateway security](#nzism-19)
+>     * [19.1. Gateways](#nzism-19-1)
 >   * [22. Enterprise systems security](#nzism-22)
 > * Architecture Pattern Catalogue for NZISM
 >   * [Gateway Security Using Firewall Appliances](#apc-gsfa)
@@ -392,7 +398,7 @@ Your are responsible for identifying and implementing processes for information 
 
 # <a id='nzism-08'>8. Physical Security</a>
 
-## 8.1. Facilities
+## <a id='nzism-08-1'>8.1. Facilities</a>
 
 #### AWS Responsibilities
 AWS is responsible for the physical security measures that are applied to the facilities comprising [AWS Global Infrastructure](#dfn-gi). You have self-service access to [independent assessments](#dfn-ia) of the physical security measures that AWS applies to its facilities.
@@ -401,7 +407,7 @@ AWS is responsible for the physical security measures that are applied to the fa
 You are responsible for the physical security measures applied to the facilities you provide for [AWS On-Premises Devices](#dfn-opd).
 
 
-## 8.2. Servers And Network Devices
+## <a id='nzism-08-2'>8.2. Servers And Network Devices</a>
 
 #### AWS Responsibilities
 AWS is responsible for ensuring that secured server and communications rooms within the [AWS Global Infrastructure](#dfn-gi) provide appropriate physical security for servers and network devices. You have self-service access to [independent assessments](#dfn-ia) of the physical security measures that AWS applies to its server and communications rooms.
@@ -410,7 +416,7 @@ AWS is responsible for ensuring that secured server and communications rooms wit
 You are responsible for ensuring that the secured server and communications rooms housing [AWS On-Premises Devices](#dfn-opd) (at least those classed as servers or network devices), provide appropriate physical security.
 
 
-## 8.3. Network Infrastructure
+## <a id='nzism-08-3'>8.3. Network Infrastructure</a>
 
 #### AWS Responsibilities
 AWS is responsible for ensuring that network infrastructure within the [AWS Global Infrastructure](#dfn-gi) is protected by secure facilities and the use of encryption technologies. You have self-service access to [independent assessments](#dfn-ia) of the secure facilities and encryption technologies that AWS applies to its network infrastructure.
@@ -422,7 +428,7 @@ AWS is responsible for ensuring that network infrastructure within the [AWS Glob
 You are responsible for ensuring that network infrastructure used by [AWS On-Premises Devices](#dfn-opd) is protected by secure facilities and the use of encryption technologies.
 
 
-## 8.4. IT Equipment
+## <a id='nzism-08-4'>8.4. IT Equipment</a>
 
 #### AWS Responsibilities
 AWS is responsible for ensuring that IT equipment within the [AWS Global Infrastructure](#dfn-gi) is secured outside of normal working hours, or is non-operational, when work areas are unoccupied.
@@ -443,7 +449,7 @@ You are responsible for ensuring that [AWS On-Premises Devices](#dfn-opd) are se
 
 
 
-## 8.5. Tamper Evident Seals
+## <a id='nzism-08-5'>8.5. Tamper Evident Seals</a>
 
 #### AWS Responsibilities
 AWS is responsible for ensuring that mechanisms and associated auditing processes identify attempts to bypass the physical security of systems within the [AWS Global Infrastructure](#dfn-gi). You have self-service access to [independent assessments](#dfn-ia) of these mechanisms and audit processes.
@@ -487,7 +493,7 @@ You are responsible for ensuring that tamper evident seals and associated auditi
 
 # <a id='nzism-19'>19. Gateway security</a>
 
-## 19.1. Gateways
+## <a id='nzism-19-1'>19.1. Gateways</a>
 
 ##### AWS Responsibilities
 AWS is responsible for ensuring that gateways are properly configured to protect its [Global Infrastructure](#dfn-gi), and the information transferred between systems from different security domains.
@@ -718,7 +724,7 @@ No applicable AWS guidance
 No applicable AWS guidance
 
 
-#### 19.1.23. Testing of gateways
+### 19.1.23. Testing of gateways
 
 #### 19.1.23.C.01.
 #### CID 3712
