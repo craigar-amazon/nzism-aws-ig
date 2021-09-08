@@ -5,8 +5,20 @@
 >   * [AWS Terms](#dfn-aws)
 >   * [General Terms](#dfn-general)
 > * [NZISM Control Objective Index](#nzism-control-objective-index)
+>   * 1. About information security
+>   * 2. Information Security within Government
+>   * 3. Information security governance - roles and responsibilities
+>   * 4. System Certification and Accreditation
+>   * 5. Information security documentation
 >   * [6. Information security monitoring](#nzism-06)
+>     * [6.1. Information Security Reviews](#nzism-06-1)
+>     * [6.2. Vulnerability Analysis](#nzism-06-2)
+>     * [6.3. Change Management](#nzism-06-3)
+>     * [6.4. Business Continuity and Disaster Recovery](#nzism-06-4)
 >   * [7. Information Security Incidents](#nzism-07)
+>     * [7.1. Detecting Information Security Incidents](#nzism-07-1)
+>     * [7.2. Reporting Information Security Incidents](#nzism-07-2)
+>     * [7.3. Managing Information Security Incidents](#nzism-07-3)
 >   * [8. Physical Security](#nzism-08)
 >     * [8.1. Facilities](#nzism-08-1)
 >     * [8.2. Servers And Network Devices](#nzism-08-2)
@@ -15,6 +27,7 @@
 >     * [8.5. Tamper Evident Seals](#nzism-08-5)
 >   * [19. Gateway security](#nzism-19)
 >     * [19.1. Gateways](#nzism-19-1)
+>     * 19.2. Cross Domain Solutions
 >   * [22. Enterprise systems security](#nzism-22)
 > * Architecture Pattern Catalogue for NZISM
 >   * [Gateway Security Using Firewall Appliances](#apc-gsfa)
@@ -242,7 +255,7 @@ The responsibilities that AWS assumes for information security monitoring within
 You are responsible for information security monitoring of activities related to the physical environment you provide for [AWS On-Premises Devices](#dfn-opd). These activities include maintenance, change management, business continuity and disaster recovery. Additional agency responsibilities are detailed under Section 6.
 
 
-## 6.1. Information Security Reviews
+## <a id='nzism-06-1'>6.1. Information Security Reviews</a>
 
 #### AWS Responsibilities
 AWS is responsible for ensuring that information security reviews maintain the security of:
@@ -255,7 +268,7 @@ You have self-service access to [independent assessments](#dfn-ia) of the AWS in
 You are responsible for ensuring that information security reviews maintain the security of the applications and data within [your AWS environments](#dfn-env).
 
 
-## 6.2. Vulnerability Analysis
+## <a id='nzism-06-2'>6.2. Vulnerability Analysis</a>
 
 #### AWS Responsibilities
 AWS is responsible for ensuring that exploitable information system weaknesses within [AWS Global Infrastructure](#dfn-gi) and [AWS On-Premises Devices](#dfn-opd) can be identified by vulnerability analyses and that they inform assessments and controls selection. You have self-service access to [independent assessments](#dfn-ia) of the AWS information security monitoring controls.
@@ -278,7 +291,7 @@ You can use [Patch Manager](#ug-patch-manager) to automate the process of patchi
 In Amazon EC2, you can create your own [standard operating environments](#standard-operating-environments) using [AMIs](#ug-ec2-ami) which you have patched and hardened.
 
 
-## 6.3. Change Management
+## <a id='nzism-06-3'>6.3. Change Management</a>
 
 #### AWS Responsibilities
 AWS is responsible for ensuring that information security is incorporated into maintenance governance, and change management activities, for:
@@ -311,7 +324,7 @@ Changes to your applications, or their environment, must be anticipated and acco
 Refer to the [change implementation](#implement-change) topic for detailed recommendations.
 
 
-## 6.4. Business Continuity and Disaster Recovery
+## <a id='nzism-06-4'>6.4. Business Continuity and Disaster Recovery</a>
 
 #### AWS Responsibilities
 AWS is responsible for ensuring that business continuity and disaster recovery processes are established for:
@@ -353,7 +366,7 @@ The responsibilities that AWS assumes for information security incident detectio
 #### Agency Responsibilities
 You are responsible for information security incident detection, reporting, and management in relation to the physical environment you provide for [AWS On-Premises Devices](#dfn-opd). Additional agency responsibilities are detailed under Section 7.
 
-## 7.1. Detecting Information Security Incidents
+## <a id='nzism-07-1'>7.1. Detecting Information Security Incidents</a>
 
 #### AWS Responsibilities
 AWS is responsible for ensuring that appropriate tools, processes and procedures are implemented to detect information security incidents within:
@@ -366,7 +379,7 @@ You have self-service access to [independent assessments](#dfn-ia) of the AWS in
 You are responsible for ensuring that appropriate tools, processes and procedures are implemented to detect information security incidents within [your AWS environments](#dfn-env).
 
 
-## 7.2. Reporting Information Security Incidents
+## <a id='nzism-07-2'>7.2. Reporting Information Security Incidents</a>
 
 #### AWS Responsibilities
 AWS is responsible for ensuring that the reporting of information security incidents, to all impacted customer agencies, is incorporated as an essential part of incident management within:
@@ -380,7 +393,7 @@ You have self-service access to [independent assessments](#dfn-ia) of the AWS in
 You are responsible for ensuring that the reporting of information security incidents, relating to applications and data within [your AWS environments](#dfn-env), is incorporated as an essential part of incident management.
 
 
-## 7.3. Managing Information Security Incidents
+## <a id='nzism-07-3'>7.3. Managing Information Security Incidents</a>
 
 #### AWS Responsibilities
 AWS is responsible for identifying and implementing processes for information security incident identification, management, and analysis within:
@@ -734,6 +747,12 @@ You should ensure that testing of security measures is performed at random inter
 
 ##### Agency Guidance
 Even with mature preventive and detective controls, you should implement mechanisms to [respond to](#incident-response) and mitigate the potential impact of security incidents. Your [preparation](#prepare-for-incidents) strongly affects the ability of your teams to operate effectively during an incident, to isolate, contain and perform forensics on issues, and to restore operations to a known good state. Putting in place the tools and access ahead of a security incident, then routinely [practicing incident response](#simulate-security-events) through game days, helps ensure that you can recover while minimising business disruption.
+
+
+## 19.2. Cross Domain Solutions
+
+#### Responsibilities
+This section is for the guidance of agencies. There are no applicable AWS responsibilities.
 
 
 # 20. Data management
