@@ -150,7 +150,7 @@ An Outpost is a pool of AWS compute and storage capacity deployed at an agency s
 ## <a id='dfn-general'>General Definitions and Terminology</a>
 
 
-## <a id='dfn-availability'>Availability</a>
+### <a id='dfn-availability'>Availability</a>
 Availability is the percentage of time that a workload is available for use. *Available for use* means that it performs its agreed function successfully when required.
 
 This percentage is calculated over a period of time, such as a month, year, or trailing three years. Applying the strictest possible interpretation, availability is reduced any time that the application isn’t operating normally, including both scheduled and unscheduled interruptions. We define availability as follows:
@@ -166,7 +166,28 @@ RTO is similar to MTTR (Mean Time to Recovery) in that both measure the time bet
 
 
 ### <a id='dfn-rpo'>Recovery Point Objective (RPO)</a>
-Quantified by each agency, RPO is the maximum acceptable amount of time since the last data recovery point. This determines what is considered an acceptable loss of data between the last recovery point and the interruption of service. 
+Quantified by each agency, RPO is the maximum acceptable amount of time since the last data recovery point. This determines what is considered an acceptable loss of data between the last recovery point and the interruption of service.
+
+
+### <a id='dfn-playbook'>Playbook</a>
+Enable consistent and prompt responses to failure scenarios by documenting the investigation process in playbooks. Playbooks are the predefined steps to perform to identify an issue. The results from any process step are used to determine the next steps to take until the issue is identified or escalated.
+
+For example, you could define a playbook for network connectivity issues to an application. The initial step might be to determine if the client is able to resolve DNS for the site. The second step might be to determine if the client can reach the host of the site. If the client is able to reach the host, the next step might be to investigate the application web service. If the client is not able to reach the site, the next step might be to determine the path the client takes to the site. Each step should help isolate the source of the issue so that ultimately it can be identified and then addressed. 
+
+Playbooks provide adequately skilled team members, who are unfamiliar with the workload, the guidance necessary to gather applicable information, identify potential sources of failure, isolate faults, and determine root cause of issues. Playbooks preserve the institutional knowledge of your organisation. They ease the burden on key personnel by sharing their knowledge and enabling more team members to achieve the same outcomes.
+
+See [Developing Playbooks](#article-developing-playbooks) for implementation guidance.
+
+
+### <a id='dfn-runbook'>Runbook</a>
+Enable consistent and prompt responses to well understood events by documenting procedures in runbooks. Runbooks are the predefined procedures to achieve a specific outcome. Runbooks should contain the minimum information necessary to successfully perform the procedure. Start with a valid effective manual process, implement it in code and trigger automated execution where appropriate. This ensures consistency, speeds responses, and reduces errors caused by manual processes.
+
+For example, the procedure to update static web site content might include staging the content in an uploaded content location, updating the web site to reference the new content, validating the display of the new content, and removing replaced content. The runbook might include steps to take if the new content does not display correctly. For example, roll back to prior content and notify the content team of the failure.
+
+Runbooks provide adequately skilled team members, who are unfamiliar with procedures or the workload, the instructions necessary to successfully complete an activity. Capturing runbooks preserves the institutional knowledge of your organization. It eases the burden on key personnel by sharing their knowledge and enabling more team members to achieve the same outcomes.
+
+See [Developing Runbooks](#article-developing-runbooks) for implementation guidance.
+
 
 
 ---
@@ -1476,10 +1497,10 @@ Use tools such as [Amazon GuardDuty](#ug-guardduty) to automatically detect susp
 Even with mature preventive and detective controls, your organisation should implement mechanisms to respond to and mitigate the potential impact of security incidents. Your preparation strongly affects the ability of your teams to operate effectively during an incident, to isolate, contain and perform forensics on issues, and to restore operations to a known good state. Putting in place the tools and access ahead of a security incident, then routinely practicing incident response through game days, helps ensure that you can recover while minimizing business disruption.
 
 * [Design goals of a cloud response](#design-goals-of-a-cloud-response)
-* [Educate your security teams]
-* [Prepare for incidents]
-* [Simulate security events]
-* [Iterate on your incident response]
+* [Educate your security teams](#educate-your-security-teams)
+* [Prepare for incidents](#prepare-for-incidents)
+* [Simulate security events](#simulate-security-events)
+* [Iterate on your incident response](#iterate-on-your-incident-response)
 
 
 ## Design goals of a cloud response
@@ -1501,6 +1522,95 @@ In AWS, there are a number of different approaches you can use when addressing i
 * *Simulate* both expected and unexpected security events within your cloud environment to understand the effectiveness of your preparation.
 * *Iterate* on the outcome of your simulation to improve the scale of your response posture, reduce time to value, and further reduce risk.
 
+
+## Educate your security teams
+Automated processes enable organizations to spend more time focusing on measures to increase the security of their workloads. Automated incident response also makes humans available to correlate events, practice simulations, devise new response procedures, perform research, develop new skills, and test or build new tools. Despite increased automation, your team, specialists, and responders within a security organization still require continuous education. We encourage you to review and incorporate the following areas when thinking about educating your security teams:
+
+* *Development Skills*: Equipping security professionals with programming skills will accelerate your organization’s automation efforts. This includes not only ensuring education around programming languages, such as Python, but also ensuring familiarity with source control system, version control, and CI/CD processes. When developers have this understanding, they’ll increase efficiency and reduce errors when automating.
+
+* *AWS Services*: It’s important for your security team to be proficient with the security services offered by AWS. Understanding how to use cloud native tools will reduce response time and build team confidence. In addition, establish a cadence of education about new services and capabilities in order to continually iterate your capabilities. Just as the threat landscape changes, so do the tools.
+
+* *Application Awareness*: Train your incident response team on the specifics of the workloads and environments that they own. This includes understanding what logs are emitted, what information the logs contain, the traffic flow of the application, and what authentication and authorization mechanisms are in use. This is a critical component as deep understanding of your organization’s infrastructure and applications provides an advantage to protecting them.
+
+The best way to learn is hands-on, through running incident response game days. This allows for experts in your team to hone the tools and techniques while teaching others. This is covered in more detail in the [Simulate](#simulate-security-events) section.
+
+Finally, don’t forget to maintain required education for your entire organization. Security awareness is an important line of defense. Users should be trained to report suspicious behavior to your security team for further investigation. 
+
+
+## Prepare for incidents
+During an incident, your incident response teams must have access to various tools and the workload resources involved in the incident. Make sure that your teams have appropriate pre-provisioned access to perform their duties before an event occurs. All tools, access, and plans should be documented and tested before an event occurs to make sure that they can provide a timely response.
+
+### Identify key personnel and external resources
+When you define your approach to incident response in the cloud, in unison with other teams (such as your legal counsel, leadership, business stakeholders, AWS Support Services, and others), you must identify key personnel, stakeholders, and relevant contacts. To reduce dependency and decrease response time, make sure that your team, specialist security teams, and responders are educated about the services that you use and have opportunities to practice hands-on.
+
+We encourage you to identify external AWS security partners that can provide you with outside expertise and a different perspective to augment your response capabilities. Your trusted security partners can help you identify potential risks or threats that you might not be familiar with.
+
+### Develop incident management plans
+Create plans to help you respond to, communicate during, and recover from an incident. For example, you can start an incident response plan with the most likely scenarios for your workload and organization. Include how you would communicate and escalate both internally and externally. Create incident response plans in the form of [playbooks](#dfn-playbook), starting with the most likely scenarios for your workload and organization. These might be events that are currently generated. If you need a starting place, you should look at [AWS Trusted Advisor](#aws-trusted-advisor) and [Amazon GuardDuty findings](#ug-guardduty-finding-types). Use a simple format such as markdown so it’s easily maintained but ensure that important commands or code snippets are included so they can be executed without having to lookup other documentation.
+
+Start simple and iterate. Work closely with your security experts and partners to identify the tasks required to ensure that the processes are possible. Define the manual descriptions of the processes you perform. After this, test the processes and iterate on the runbook pattern to improve the core logic of your response. Determine what the exceptions are, and what the alternative resolutions are for those scenarios. For example, in a development environment, you might want to terminate a misconfigured Amazon EC2 instance. But, if the same event occurred in a production environment, instead of terminating the instance, quarantine the instance by snap-shotting volumes, and capturing memory. In addition, verify with stakeholders that critical data will not be lost, and evidence is collected before shutdown. Include how you would communicate and escalate both internally and externally. When you are comfortable with the manual response to the process, automate it to reduce the time to resolution.
+
+### Pre-provision access
+Ensure that incident responders have the correct access pre-provisioned into AWS and other relevant systems to reduce the time for investigation through to recovery. Determining how to get access for the right people during an incident delays the time it takes to respond, and can introduce other security weaknesses if access is shared or not properly provisioned while under pressure. You must know what level of access your team members require (for example, what kinds of actions they are likely to take) and you must provision access in advance. Access in the form of roles or users created specifically to respond to a security incident are often privileged in order to provide sufficient access. Therefore, use of these user accounts should be restricted, they should not be used for daily activities, and usage alerted on.
+
+### Pre-deploy tools
+Ensure that security personnel have the right tools pre-deployed into AWS to reduce the time for investigation through to recovery.
+
+To automate security engineering and operations functions, you can use a comprehensive set of APIs and tools from AWS. You can fully automate identity management, network security, data protection, and monitoring capabilities and deliver them using popular software development methods that you already have in place. When you build security automation, your system can monitor, review, and initiate a response, rather than having people monitor your security position and manually react to events. An effective way to automatically provide searchable and relevant log data across AWS services to your incident responders is to enable [Amazon Detective](#ug-detective).
+
+If your incident response teams continue to respond to alerts in the same way, they risk alert fatigue. Over time, the team can become desensitized to alerts and can either make mistakes handling ordinary situations or miss unusual alerts. Automation helps avoid alert fatigue by using functions that process the repetitive and ordinary alerts, leaving humans to handle the sensitive and unique incidents. Integrating anomaly detection systems, such as [GuardDuty](#ug-guardduty), [CloudTrail Insights](#ug-cloudtrail-insights), and [CloudWatch Anomaly Detection](#ug-cw-anomaly-detection), can reduce the burden of common threshold-based alerts.
+
+You can improve manual processes by programmatically automating steps in the process. After you define the remediation pattern to an event, you can decompose that pattern into actionable logic, and write the code to perform that logic. Responders can then execute that code to remediate the issue. Over time, you can automate more and more steps, and ultimately automatically handle whole classes of common incidents.
+
+For tools that execute within the operating system of your EC2 instance, you should evaluate using the [AWS Systems Manager Run Command](#ug-run-command), which enables you to remotely and securely administrate instances using an agent that you install on your Amazon EC2 instance operating system. It requires the AWS Systems Manager Agent (SSM Agent), which is installed by default on many Amazon Machine Images (AMIs). Be aware, though, that once an instance has been compromised, no responses from tools or agents running on it should be considered trustworthy.
+
+### Prepare forensic capabilities
+It’s important for your incident responders to have an understanding of when and how the forensic investigation fits into your response plan. Your organization should define what evidence is collected and what tools are used in the process. Identify and prepare forensic investigation capabilities that are suitable, including external specialists, tools, and automation. A key decision that you should make upfront is if you will collect data from a “live” system. Some data, such as the contents of volatile memory or active network connections, will be lost if the system is powered off or rebooted.
+
+Your response team can combine tools, such as [AWS System Manager](#ug-systems-manager), [Amazon EventBridge](#ug-eventbridge), and AWS Lambda, to automatically run forensic tools within an operating system and [VPC traffic mirroring](#ug-vpc-traffic-mirroring) to obtain a network packet capture, to gather non-persistent evidence. Conduct other activities, such as log analysis or analyzing disk images, in a dedicated security account with customized forensic workstations and tools accessible to your responders.
+
+Routinely ship relevant logs to a data store that provides high durability and integrity. Responders should have access to those logs. AWS offers several tools that can make log investigation easier, such as Amazon Athena, Amazon Elasticsearch Service (Amazon ES), and [CloudWatch Log Insights](#ug-cwl-insights). Additionally, preserve evidence securely using S3 Object Lock. This service follows the WORM (write-once-read-many) model and prevents objects from being deleted or overwritten for a defined period of time. As forensic investigation techniques require specialist training, you might need to engage external specialists. 
+
+
+
+## Simulate security events
+
+### Run game days
+Game days, also known as simulations or exercises, are internal events that provide a structured opportunity to practice your incident management plans and procedures during a realistic scenario. These events should exercise responders using the same tools and techniques that would be used in a real-world scenario - even mimicking real-world environments. Game days are fundamentally about being prepared and iteratively improving your response capabilities. Some of the reasons you might find value in performing game day activities include:
+* Validating readiness
+* Developing confidence – learning from simulations and training staff
+* Following compliance or contractual obligations
+* Generating artifacts for accreditation
+* Being agile – incremental improvement
+* Becoming faster and improving tools
+* Refining communication and escalation
+* Developing comfort with the rare and the unexpected
+
+For these reasons, the value derived from participating in a simulation activity increases an organization's effectiveness during stressful events. Developing a simulation activity that is both realistic and beneficial can be a difficult exercise. Although testing your procedures or automation that handles well-understood events has certain advantages, it is just as valuable to participate in creative SIRS activities to test yourself against the unexpected and continuously improve.
+
+Create custom simulations tailored to your environment, team, and tools. Find an issue and design your simulation around it. This could be something like a leaked credential, a server communicating with unwanted systems, or a misconfiguration that results in unauthorized exposure. Identify engineers who are familiar with your organisation to create the scenario and another group to participate. The scenario should be realistic and challenging enough to be valuable. It should include the opportunity to get hands on with logging, notifications, escalations, and executing runbooks or automation. During the simulation, your responders should exercise their technical and organisational skills, and leaders should be involved to build their incident management skills. At the conclusion of the simulation, celebrate the efforts of the team and look for ways to iterate, repeat, and expand into further simulations.
+
+AWS has created [Incident Response Runbook templates](#samples-incident-response-playbooks) that you can use not only to prepare your response efforts, but also as a basis for a simulation. When planning, a simulation can be broken into five phases.
+
+* *Evidence gathering*: In this phase, a team will get alerts through various means, such as an internal ticketing system, alerts from monitoring tooling, anonymous tips, or even public news. Teams then start to review infrastructure and application logs to determine the source of the compromise. This step should also involve internal escalations and incident leadership. Once identified, teams move on to containing the incident.
+
+* *Contain the incident*: Teams will have determined there has been an incident and established the source of the compromise. Teams now should take action to contain it, for example, by disabling compromised credentials, isolating a compute resource, or revoking a role’s permission.
+
+* *Eradicate the incident*: Now that they’ve contained the incident, teams will work towards mitigating any vulnerabilities in applications or infrastructure configurations that were susceptible to the compromise. This could include rotating all credentials used for a workload, modifying Access Control Lists (ACLs) or changing network configurations.
+
+* *Recover from the incident*: After teams have implemented best practices, they can now focus on ensuring the complete removal of the compromise. They can do this by restoring files or pieces of data that were compromised during the incident from backups or previous versions. Also, they must ensure that all suspicious activity has ceased and continue to monitor to ensure a stable state.
+
+* *Post-incident debrief*: This session allows teams to share learnings and increase the overall effectiveness of the organization’s incident response plan. Here the teams should review handling of the incident in detail, document lessons learned, update runbooks based on learnings, and determine if new risk assessments are required. 
+
+
+## Iterate on your incident response
+
+### Automate containment and recovery capability
+Automate containment and recovery of an incident to reduce response times and organizational impact. Once you create and practice the processes and tools from your playbooks, you can deconstruct the logic into a code-based solution, which can be used as a tool by many responders to automate the response and remove variance or guess-work by your responders. This can speed up the lifecycle of a response. The next goal is to enable this code to be fully automated by being invoked by the alerts or events themselves, rather than by a human responder, to create an event-driven response. These processes should also automatically add relevant data to your security systems.
+
+With an event-driven response system, a detective mechanism triggers a responsive mechanism to automatically remediate the event. You can use event-driven response capabilities to reduce the time-to-value between detective mechanisms and responsive mechanisms. To create this event-driven architecture, you can use AWS Lambda, which is a serverless compute service that runs your code in response to events and automatically manages the underlying compute resources for you.
+
+For example, assume that you have an AWS account with the AWS CloudTrail service enabled. If AWS CloudTrail is ever disabled (through the `cloudtrail:StopLogging` API call), you can use [Amazon EventBridge](#ug-eventbridge) to monitor for the specific `cloudtrail:StopLogging` event, and invoke an AWS Lambda function to call `cloudtrail:StartLogging` to restart logging. 
 
 
 
@@ -2198,6 +2308,9 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ### <a id='aws-provable-security'>Provable Security</a>
 > <https://aws.amazon.com/security/provable-security/>
 
+### <a id='aws-trusted-advisor'>AWS Trusted Advisor</a>
+> <https://aws.amazon.com/premiumsupport/technology/trusted-advisor/>
+
 
 ## AWS Whitepapers
 
@@ -2364,6 +2477,9 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 > <https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html>
 
 
+#### Amazon Detective <a id='ug-detective'/>
+> <https://docs.aws.amazon.com/detective/latest/adminguide/what-is-detective.html>
+
 #### AWS Firewall Manager <a id='ug-firewall-manager'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/fms-chapter.html>
 
@@ -2371,7 +2487,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 > <https://docs.aws.amazon.com/guardduty/latest/ug/what-is-guardduty.html>
 
 ##### Finding Types <a id='ug-guardduty-finding-types'/>
-> <https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_finding-types-s3.html>
+> <https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_finding-types-active.html>
 
 #### Amazon Inspector <a id='ug-inspector'/>
 > <https://docs.aws.amazon.com/inspector/latest/userguide/inspector_introduction.html>
@@ -2476,11 +2592,19 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### AWS CloudTrail <a id='ug-cloudtrail'/>
 > <https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html>
 
+##### CloudTrail Insights <a id='ug-cloudtrail-insights'/>
+> <https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-insights-events-with-cloudtrail.html>
+
+
 #### Amazon CloudWatch <a id='ug-cw'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html>
 
 ##### Synthetic Monitoring <a id='ug-cw-synthetic'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries.html>
+
+##### Anomaly Detection <a id='ug-cw-anomaly-detection'/>
+> <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Anomaly_Detection.html>
+
 
 ##### CloudWatch Logs <a id='ug-cwl'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html>
@@ -2511,6 +2635,9 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ##### Session Manager <a id='ug-session-manager'/>
 > <https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html>
+
+##### Run Command <a id='ug-run-command'/>
+> <https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html>
 
 ##### Systems Manager Automation <a id='ug-sm-automation'/>
 > <https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation.html>
@@ -2628,11 +2755,16 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Network ACLS <a id='ug-vpc-nacl'/>
 > <https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html>
 
+##### Traffic Mirroring <a id='ug-vpc-traffic-mirroring'/>
+> <https://docs.aws.amazon.com/vpc/latest/mirroring/what-is-traffic-mirroring.html>
+
+
 #### AWS VPN - Client <a id='ug-vpn-client'/>
 > <https://docs.aws.amazon.com/vpn/latest/clientvpn-user/client-vpn-user-what-is.html>
 
 #### AWS VPN - Site-to-Site <a id='ug-vpn-s2s'/>
 > <https://docs.aws.amazon.com/vpn/latest/s2svpn/VPC_VPN.html>
+
 
 
 ### *Application Integration*
@@ -2774,6 +2906,12 @@ You can use AWS WAF to create custom, application-specific rules that block atta
 > <https://blogs.cisco.com/datacenter/cisco-cloud-aci-aws-continued-journey-in-the-cloud-2>
 
 
+## AWS Samples
+
+### AWS Incident Response Playbook Samples <a id='samples-incident-response-playbooks'/>
+> <https://github.com/aws-samples/aws-incident-response-playbooks>
+
+
 ## AWS Articles
 
 ### Distributed Denial of Service (DDoS) <a id='article-ddos'/>
@@ -2786,6 +2924,12 @@ You can use AWS WAF to create custom, application-specific rules that block atta
 
 ### Direct Connect Resiliency Recommendations <a id='article-dx-resiliency'/>
 > <https://aws.amazon.com/directconnect/resiliency-recommendation/>
+
+### Developing Playbooks <a id='article-developing-playbooks'/>
+> <https://wa.aws.amazon.com/wat.concept.playbook.en.html>
+
+### Developing Runbooks <a id='article-developing-runbooks'/>
+> <https://wa.aws.amazon.com/wat.concept.runbook.en.html>
 
 
 ## AWS Premium Support Knowledge Base
