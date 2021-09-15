@@ -52,7 +52,8 @@
 >   * [Change Management](#change-management)
 >   * [Failure Management](#failure-management)
 >
-> [AWS Managed Config Rule Catalogue](#aws-managed-config-rule-catalogue)
+> [NZISM Conformance Pack Config Rule Catalogue](#nzism-conformance-pack-config-rule-catalogue)
+> * [cloudwatch-log-group-encrypted](#cr-cloudwatch-log-group-encrypted)
 > * [elb-logging-enabled](#cr-elb-logging-enabled)
 > * [encrypted-volumes](#cr-encrypted-volumes)
 > * [guardduty-enabled-centralized](#cr-guardduty-enabled-centralized)
@@ -551,6 +552,9 @@ Event logs can themselves contain data that is considered sensitive. For example
 
 In order to assist with troubleshooting and forensics investigations, you should ensure a minimum duration of event log data is retained for your CloudWatch log groups. The lack of available past event log data makes it difficult to reconstruct and identify potentially malicious events.
 
+##### Conformance Pack Rules
+> * [cloudwatch-log-group-encrypted](#cr-cloudwatch-log-group-encrypted)
+
 
 # 17. Cryptography
 *Work-In-Progress*
@@ -588,7 +592,7 @@ You are responsible for ensuring that any change to the configuration of network
 You should implement network access controls on the following networking resources within your AWS environment:
 > * [VPC](#ug-vpc) components, including [load balancers](#ug-lb);
 > * [API Gateways](#ug-apigw); and
-> * [Cloudfront] distributions.
+> * [Cloudfront](#ug-cloudfront) distributions.
 
 
 ##### Agency Guidance
@@ -605,6 +609,9 @@ A [network access control list](#ug-vpc-nacl) is an optional layer of security f
 The following architecture patterns implement this control:
 > * [Gateway Security Using Firewall Appliances](#apc-gsfa)
 
+
+##### Conformance Pack Rules
+> *  [vpc-sg-open-only-to-authorized-ports](#cr-vpc-sg-open-only-to-authorized-ports)
 
 
 # <a id='nzism-19'>19. Gateway security</a>
@@ -2188,7 +2195,7 @@ Based on configured health checks, AWS services, such as [Elastic Load Balancing
 For workloads on existing physical or virtual data centers or private clouds, [CloudEndure Disaster Recovery](#aws-cloudendure-dr), available through AWS Marketplace, enables organizations to set up an automated disaster recovery strategy to AWS. CloudEndure also supports cross-Region / cross-AZ disaster recovery in AWS.
 
 ---
-# AWS Managed Config Rule Catalogue
+# NZISM Conformance Pack Config Rule Catalogue
 
 
 ## <a id='cr-alb-waf-enabled'>alb-waf-enabled</a>
@@ -2197,6 +2204,98 @@ Checks if Web Application Firewall (WAF) is enabled on Application Load Balancer
 
 ##### Resources In Scope
 * [Application Load Balancer](#ug-alb)
+
+
+## <a id='cr-cloudwatch-log-group-encrypted'>cloudwatch-log-group-encrypted</a>
+Checks if a log group in Amazon CloudWatch Logs is encrypted with a AWS Key Management Service (KMS) managed Customer Master Keys (CMK). The rule is NON_COMPLIANT if no AWS KMS CMK is configured on the log groups.
+> <https://docs.aws.amazon.com/config/latest/developerguide/cloudwatch-log-group-encrypted.html>
+
+
+#### Compliance Guide
+You should create an agency-managed KMS key for use by the CloudWatch Logs service, then attach this key when creating new Log Groups.
+
+Following is a sample KMS key policy. You will need to substitute `<ACCOUNTID>` and `<KEYADMIN>`.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Id": "ExamplePolicy",
+    "Statement": [
+        {
+            "Sid": "Enable IAM User Permissions",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::<ACCOUNTID>:root"
+            },
+            "Action": "kms:*",
+            "Resource": "*"
+        },
+        {
+            "Sid": "Allow access for Key Administrators",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::<ACCOUNTID>:role/<KEYADMIN>"
+            },
+            "Action": [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "Allow access for CloudWatch Logs",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "logs.ap-southeast-2.amazonaws.com"
+            },
+            "Action": [
+                "kms:Encrypt*",
+                "kms:Decrypt*",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:Describe*"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "ArnLike": {
+                    "kms:EncryptionContext:aws:logs:arn": "arn:aws:logs:ap-southeast-2:<ACCOUNTID>:*"
+                }
+            }
+        }
+    ]
+}
+```
+
+#### Control Mappings
+> [2022](#cid-2022)]
+
+
+
+## <a id='cr-cw-loggroup-retention-period-check'>cw-loggroup-retention-period-check</a>
+Checks whether Amazon CloudWatch LogGroup retention period is set to specific number of days. The rule is NON_COMPLIANT if the retention period is not set or is less than the configured retention period.
+> <https://docs.aws.amazon.com/config/latest/developerguide/cw-loggroup-retention-period-check.html>
+
+
+#### Compliance Guide
+Ensure a minimum duration of event log data is retained for your log groups to help with troubleshooting and forensics investigations. The lack of available past event log data makes it difficult to reconstruct and identify potentially malicious events.
+
+The minimum retention is *18 months*.
+
+#### Control Mappings
+> [1998](#cid-1998)
+> [2028](#cid-2028)
 
 
 
@@ -2261,7 +2360,7 @@ Amazon S3 allows both HTTP and HTTPS requests.
 
 Confirm that your bucket policies explicitly deny access to HTTP requests. Bucket policies that allow HTTPS requests without explicitly denying HTTP requests might not comply with this rule.
 
-To determine HTTP or HTTPS requests in a bucket policy, use a condition that checks for the key `aws:SecureTransport`. This key is true when the request is sent through HTTPS. Here's a sample bucket policy.
+To determine HTTP or HTTPS requests in a bucket policy, use a condition that checks for the key `aws:SecureTransport`. This key is true when the request is sent through HTTPS. Here's a sample bucket policy. You will need to substitute `<DOC-EXAMPLE-BUCKET>` for your bucket name.
 ```json
 {
   "Id": "ExamplePolicy",
@@ -2272,8 +2371,8 @@ To determine HTTP or HTTPS requests in a bucket policy, use a condition that che
       "Action": "s3:*",
       "Effect": "Deny",
       "Resource": [
-        "arn:aws:s3:::DOC-EXAMPLE-BUCKET",
-        "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*"
+        "arn:aws:s3:::<DOC-EXAMPLE-BUCKET>",
+        "arn:aws:s3:::<DOC-EXAMPLE-BUCKET>/*"
       ],
       "Condition": {
         "Bool": {
@@ -2323,6 +2422,10 @@ You should ensure that common ports are restricted on VPC Security Groups. Faili
 
 The authorized Internet port list is:
 > * TCP 443
+
+#### Control Mappings
+> [3205](#cid-3205)]
+
 
 
 ## <a id='cr-wafv2-logging-enabled'>wafv2-logging-enabled</a>
