@@ -25,6 +25,8 @@
 >     * [8.3. Network Infrastructure](#nzism-08-3)
 >     * [8.4. IT Equipment](#nzism-08-4)
 >     * [8.5. Tamper Evident Seals](#nzism-08-5)
+>   * [16. Access Control and Passwords](nzism-16)
+>     * [16.6. Event Logging and Auditing](nzism-16-6)
 >   * [19. Gateway security](#nzism-19)
 >     * [19.1. Gateways](#nzism-19-1)
 >     * [19.2. Cross Domain Solutions](#nzism-19-2)
@@ -496,8 +498,47 @@ You are responsible for ensuring that tamper evident seals and associated auditi
 # 15. Email security
 *Work-In-Progress*
 
-# 16. Access Control and Passwords
-*Work-In-Progress*
+
+
+# <a id='nzism-16'>16. Access Control and Passwords</a>
+
+## <a id='nzism-16-6'>16.6. Event Logging and Auditing</a>
+
+##### AWS Responsibilities
+AWS is responsible for ensuring that information security related events relating to its [Global Infrastructure](#dfn-gi) are logged and audited for accountability, incident management, forensic and system monitoring purposes.
+
+The responsibilities that AWS assumes for event logging and auditing within [AWS On-Premises Devices](#dfn-opd) is described in these documents:
+
+[Outposts](#faq-outposts)
+> * [Logging and Monitoring](#ug-outposts-monitoring)
+
+[Snow Family](#faq-snow)
+> * [Logging and Monitoring](#ug-snowedge-monitoring)
+
+You have self-service access to [independent assessments](#dfn-ia) of the AWS event logging and auditing controls.
+
+
+### 16.6.12. Event log protection
+
+#### 16.6.12.C.01.
+#### CID 2022
+
+##### Agency Responsibilities
+You must protect the event logs with your AWS environment from:
+* modification and unauthorised access; and
+* whole or partial loss within the defined retention period.
+
+The foundational event logs within your AWS environment include:
+> * [CloudTrail](#ug-cloudtrail), which provides an event history of your AWS account activity, including actions taken through the AWS Management Console, AWS SDKs, command line tools, and other AWS services;
+> * [CloudWatch Logs](#ug-cwl), which centralises logs from your applications, your [EC2 instances](#ug-ec2), and the AWS services you use, as a single, consistent, queryable flow of events, ordered by time; and
+> * [AWS Config](#ug-config), which monitors and records your AWS resource configurations and allows you to automate the evaluation and remediation against desired configurations.
+
+AWS services such [API Gateway](#ug-apig), [Lambda](#ug-lambda), [RDS](#ug-rds), [Route53](#ug-route53), and [VPC](#ug-vpc) publish logs to CloudWatch Logs.
+
+
+##### Agency Guidance
+
+
 
 # 17. Cryptography
 *Work-In-Progress*
@@ -753,7 +794,7 @@ Even with mature preventive and detective controls, you should implement mechani
 ## <a id='nzism-19-2'>19.2. Cross Domain Solutions</a>
 
 #### Responsibilities
-This section is for the guidance of agencies. There are no applicable AWS responsibilities.
+No applicable AWS responsibilities.
 
 
 # 20. Data management
@@ -780,6 +821,10 @@ You are responsible for ensuring that cloud systems risks within [your AWS envir
 Eligible NZ government agencies consuming AWS as an affiliate under the [NZ Cloud Framework Agreement](#nzcfa) (NZ CFA) benefit from standard contractual terms negotiated by the Department of Internal Affairs regarding jurisdiction, security, and privacy.
 
 Organisations that are not eligible to become an affiliate of the NZ CFA should refer to the [AWS Customer Agreement](#aws-customer-agreement) for the current terms and conditions governing your access to and use of the AWS Service Offerings; in particular *Section 3. Security and Data Privacy*.
+
+
+### 22.1.1 to 22.1.21
+No applicable AWS guidance
 
 
 ### 22.1.22. Offshore Services
@@ -1249,7 +1294,54 @@ You should have a process that allows emergency access to your workload, in part
 
 
 # Detection
-TODO
+> Source: <https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/detection.html>
+
+Detection consists of two parts: detection of unexpected or unwanted configuration changes, and the detection of unexpected behavior. The first can take place at multiple places in an application delivery lifecycle. Using infrastructure as code (for example, a [CloudFormation](#ug-cloudformation) template), you can check for unwanted configuration before a workload is deployed by implementing checks in the CI/CD pipelines or source control. Then, as you deploy a workload into non-production and production environments, you can check configuration using native AWS, open source, or AWS Partner tools. These checks can be for configuration that does not meet security principles or best practices, or for changes that were made between a tested and deployed configuration. For a running application, you can check whether the configuration has been changed in an unexpected fashion, including outside of a known deployment or automated scaling event.
+
+For the second part of detection, unexpected behavior, you can use tools or by alerting on an increase in a particular type of API call. Using [Amazon GuardDuty](#ug-guardduty), you can be alerted when unexpected and potentially unauthorized or malicious activity occurs within your AWS accounts. You should also explicitly monitor for mutating API calls that you would not expect to be used in your workload, and API calls that change the security posture.
+
+Detection enables you to identify a potential security misconfiguration, threat, or unexpected behavior. It’s an essential part of the security lifecycle and can be used to support a quality process, a legal or compliance obligation, and for threat identification and response efforts. There are different types of detection mechanisms. For example, logs from your workload can be analyzed for exploits that are being used. You should regularly review the detection mechanisms related to your workload to ensure that you are meeting internal and external policies and requirements. Automated alerting and notifications should be based on defined conditions to enable your teams or tools to investigate. These mechanisms are important reactive factors that can help your organization identify and understand the scope of anomalous activity.
+
+
+### Configure service and application logging
+A foundational practice is to establish a set of detection mechanisms at the account level. This base set of mechanisms is aimed at recording and detecting a wide range of actions on all resources in your account. They allow you to build out a comprehensive detective capability with options that include automated remediation, and partner integrations to add functionality.
+
+In AWS, services that can implement this base set include:
+
+> * [AWS CloudTrail](#ug-cloudtrail) provides the event history of your AWS account activity, including actions taken through the AWS Management Console, AWS SDKs, command line tools, and other AWS services.
+> * [AWS Config](#ug-config) monitors and records your AWS resource configurations and allows you to automate the evaluation and remediation against desired configurations.
+> * [Amazon GuardDuty](#ug-guardduty) is a threat detection service that continuously monitors for malicious activity and unauthorized behavior to protect your AWS accounts and workloads.
+> * [AWS Security Hub](#ug-security-hub) provides a single place that aggregates, organizes, and prioritizes your security alerts, or findings, from multiple AWS services and optional third-party products to give you a comprehensive view of security alerts and compliance status.
+
+Building on the foundation at the account level, many core AWS services, for example [Amazon VPC](#ug-vpc), provide service-level logging features. [VPC Flow Logs](#ug-vpc-flow-logs) enable you to capture information about the IP traffic going to and from network interfaces that can provide valuable insight into connectivity history, and trigger automated actions based on anomalous behavior.
+
+For EC2 instances and application-based logging that doesn’t originate from AWS services, logs can be stored and analyzed using [Amazon CloudWatch Logs](#ug-cwl). An [agent](#ug-cw-agent) collects the logs from the operating system and the applications that are running and automatically stores them. Once the logs are available in CloudWatch Logs, you can process them in [real-time](ug-cwl-realtime), or dive into analysis using [CloudWatch Logs Insights](#ug-cwl-insights).
+
+Equally important to collecting and aggregating logs is the ability to extract meaningful insight from the great volumes of log and event data generated by complex architectures. See the [Monitoring](#monitor-workload-resources) section of the Reliability Pillar whitepaper for more detail. Logs can themselves contain data that is considered sensitive– either when application data has erroneously found its way into log files that the CloudWatch Logs agent is capturing, or when cross-region logging is configured for log aggregation and there are legislative considerations about shipping certain kinds of information across borders.
+
+One approach is to use [Lambda](#ug-lambda) functions, triggered on events when logs are delivered, to filter and redact log data before forwarding into a central logging location, such as an S3 bucket. The unredacted logs can be retained in a local bucket until a “reasonable time” has passed (as determined by legislation and your legal team), at which point an S3 lifecycle rule can automatically delete them. Logs can further be protected in Amazon S3 by using [S3 Object Lock](#ug-s3-object-lock), where you can store objects using a write-once-read-many (WORM) model. 
+
+
+### Analyze logs, findings, and metrics centrally
+Security operations teams rely on the collection of logs and the use of search tools to discover potential events of interest, which might indicate unauthorized activity or unintentional change. However, simply analyzing collected data and manually processing information is insufficient to keep up with the volume of information flowing from complex architectures. Analysis and reporting alone don’t facilitate the assignment of the right resources to work an event in a timely fashion.
+
+A best practice for building a mature security operations team is to deeply integrate the flow of security events and findings into a notification and workflow system such as a ticketing system, a bug/issue system, or other security information and event management (SIEM) system. This takes the workflow out of email and static reports, and allows you to route, escalate, and manage events or findings. Many organizations are also integrating security alerts into their chat/collaboration and developer productivity platforms. For organizations embarking on automation, an API-driven, low-latency ticketing system offers considerable flexibility when planning “what to automate first”.
+
+This best practice applies not only to security events generated from log messages depicting user activity or network events, but also from changes detected in the infrastructure itself. The ability to detect change, determine whether a change was appropriate, and then route that information to the correct remediation workflow is essential in maintaining and validating a secure architecture, in the context of changes where the nature of their undesirability is sufficiently subtle that their execution cannot currently be prevented with a combination of IAM and Organizations configuration.
+
+GuardDuty and Security Hub provide aggregation, de-duplication, and analysis mechanisms for log records that are also made available to you via other AWS services. GuardDuty ingests, aggregates, and analyzes information from sources such as CloudTrail management and data events, VPC DNS logs, and VPC Flow Logs. Security Hub can ingest, aggregate, and analyze output from GuardDuty, AWS Config, Amazon Inspector, Amazon Macie, AWS Firewall Manager, and a significant number of third-party security products available in the AWS Marketplace, and if built accordingly, your own code. Both GuardDuty and Security Hub have a Manager-Member model that can aggregate findings and insights across multiple accounts, and Security Hub is often used by customers who have an on-premises SIEM as an AWS-side log and alert preprocessor and aggregator from which they can then ingest Amazon EventBridge via a Lambda-based processor and forwarder. 
+
+
+### Implement actionable security events
+For each detective mechanism you have, you should also have a process, in the form of a [runbook](#dfn-runbook) or [playbook](#dfn-playbook), to investigate. For example, when you enable [Amazon GuardDuty](#ug-guardduty), it generates different findings. You should have a runbook entry for each finding type, for example, if a trojan is discovered, your runbook has simple instructions that instruct someone to investigate and remediate.
+
+
+### Automate response to events
+In AWS, investigating events of interest and information on potentially unexpected changes into an automated workflow can be achieved using [Amazon EventBridge](#ug-eventbridge). This service provides a scalable rules engine designed to broker both native AWS event formats (such as CloudTrail events), as well as custom events you can generate from your application. Amazon GuardDuty also allows you to route events to a workflow system for those building incident response systems (Step Functions), or to a central Security Account, or to a bucket for further analysis.
+
+Detecting change and routing this information to the correct workflow can also be accomplished using AWS [Config Rules](#ug-config-rules) and Conformance Packs. AWS Config detects changes to in-scope services (though with higher latency than Amazon EventBridge) and generates events that can be parsed using AWS Config Rules for rollback, enforcement of compliance policy, and forwarding of information to systems, such as change management platforms and operational ticketing systems. As well as writing your own Lambda functions to respond to AWS Config events, you can also take advantage of the AWS Config Rules Development Kit, and a library of open source AWS Config Rules. Conformance packs are a collection of Config Rules and remediation actions you deploy as a single entity authored as a YAML template. A sample conformance pack template is available for the [NZISM](#ug-config-cp-nzism). 
+
+
 
 # Infrastructure Protection
 
@@ -2392,6 +2484,9 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Site Requirements <a id='ug-outposts-site-requirements'/>
 > <https://docs.aws.amazon.com/outposts/latest/userguide/outposts-requirements.html#facility-networking>
 
+##### Logging and Monitoring <a id='ug-outposts-monitoring'/>
+> <https://docs.aws.amazon.com/outposts/latest/userguide/monitor-outposts.html>
+
 ### Containers
 
 #### Amazon ECR <a id='ug-ecr'/>
@@ -2422,6 +2517,13 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ##### Object Lock <a id='ug-s3-object-lock'/>
 > <https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html>
+
+
+#### AWS Snowball Edge <a id='ug-snowedge'/>
+> <https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html>
+
+##### Logging and Monitoring <a id='ug-snowedge-monitoring'/>
+> <https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html>
 
 
 ### Database
@@ -2548,6 +2650,10 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 ##### Integrated Services <a id='ug-secrets-manager-integrated-services'/>
 > <https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating.html>
 
+
+#### AWS Security Hub <a id='ug-security-hub'/>
+> <https://docs.aws.amazon.com/securityhub/latest/userguide/what-is-securityhub.html>
+
 #### AWS Shield <a id='ug-shield'/>
 > <https://docs.aws.amazon.com/waf/latest/developerguide/shield-chapter.html>
 
@@ -2631,18 +2737,23 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### Amazon CloudWatch <a id='ug-cw'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html>
 
+##### CloudWatch Agent <a id='ug-cw-agent'/>
+> <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Install-CloudWatch-Agent.html>
+
 ##### Synthetic Monitoring <a id='ug-cw-synthetic'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries.html>
 
 ##### Anomaly Detection <a id='ug-cw-anomaly-detection'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Anomaly_Detection.html>
 
-
 ##### CloudWatch Logs <a id='ug-cwl'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html>
 
 ##### CloudWatch Logs Insights <a id='ug-cwl-insights'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html>
+
+##### CloudWatch Logs Real Time Processing <a id='ug-cwl-realtime'/>
+> <https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/Subscriptions.html>
 
 ##### CloudWatch Events <a id='ug-cwe'/>
 > <https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/WhatIsCloudWatchEvents.html>
@@ -2655,6 +2766,10 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ##### Managed Config Rules <a id='ug-config-managed-rules'/>
 > <https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html>
+
+##### NZISM Conformance Pack <a id='ug-config-cp-nzism'/>
+> <https://docs.aws.amazon.com/config/latest/developerguide/operational-best-practices-for-nzism.html>
+
 
 #### AWS Health <a id='ug-health'/>
 > <https://docs.aws.amazon.com/health/latest/ug/what-is-aws-health.html>
