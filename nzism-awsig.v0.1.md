@@ -55,6 +55,8 @@
 > [NZISM Conformance Pack Config Rule Catalogue](#nzism-conformance-pack-config-rule-catalogue)
 > * [cloudwatch-log-group-encrypted](#cr-cloudwatch-log-group-encrypted)
 > * [cw-loggroup-retention-period-check](#cr-cw-loggroup-retention-period-check)
+> * [ec2-instances-in-vpc](#cr-ec2-instances-in-vpc)
+> * [ec2-instance-no-public-ip](#cr-ec2-instance-no-public-ip)
 > * [elb-logging-enabled](#cr-elb-logging-enabled)
 > * [encrypted-volumes](#cr-encrypted-volumes)
 > * [guardduty-enabled-centralized](#cr-guardduty-enabled-centralized)
@@ -63,6 +65,7 @@
 > * [s3-default-encryption-kms](#cr-s3-default-encryption-kms)
 > * [vpc-default-security-group-closed](#cr-vpc-default-security-group-closed)
 > * [vpc-flow-logs-enabled](#cr-vpc-flow-logs-enabled)
+> * [vpc-sg-open-only-to-authorized-ports](#cr-vpc-sg-open-only-to-authorized-ports)
 > * [wafv2-logging-enabled](#cr-wafv2-logging-enabled)
 >
 > [Control Index Catalogue](#control-index-catalogue)
