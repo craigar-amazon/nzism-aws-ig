@@ -1,63 +1,71 @@
 # *NZISM Implementation Guide for AWS*
 
 # <a id='toc'>*Table of Contents*</a>
-> * [Definitions and Terminology](#definitions-and-terminology)
+> [Definitions and Terminology](#definitions-and-terminology)
 >   * [AWS Terms](#dfn-aws)
 >   * [General Terms](#dfn-general)
-> * [NZISM Control Objective Index](#nzism-control-objective-index)
->   * [1. About information security](#nzism-01)
->   * [2. Information Security within Government](#nzism-02)
->   * [3. Information security governance - roles and responsibilities](#nzism-03)
->   * [4. System Certification and Accreditation](#nzism-04)
->   * [5. Information security documentation](#nzism-05)
->   * [6. Information security monitoring](#nzism-06)
->     * [6.1. Information Security Reviews](#nzism-06-1)
->     * [6.2. Vulnerability Analysis](#nzism-06-2)
->     * [6.3. Change Management](#nzism-06-3)
->     * [6.4. Business Continuity and Disaster Recovery](#nzism-06-4)
->   * [7. Information Security Incidents](#nzism-07)
->     * [7.1. Detecting Information Security Incidents](#nzism-07-1)
->     * [7.2. Reporting Information Security Incidents](#nzism-07-2)
->     * [7.3. Managing Information Security Incidents](#nzism-07-3)
->   * [8. Physical Security](#nzism-08)
->     * [8.1. Facilities](#nzism-08-1)
->     * [8.2. Servers And Network Devices](#nzism-08-2)
->     * [8.3. Network Infrastructure](#nzism-08-3)
->     * [8.4. IT Equipment](#nzism-08-4)
->     * [8.5. Tamper Evident Seals](#nzism-08-5)
->   * [16. Access Control and Passwords](nzism-16)
->     * [16.6. Event Logging and Auditing](nzism-16-6)
->   * [19. Gateway security](#nzism-19)
->     * [19.1. Gateways](#nzism-19-1)
->     * [19.2. Cross Domain Solutions](#nzism-19-2)
->   * [22. Enterprise systems security](#nzism-22)
->     * [22.1. Cloud Computing](#nzism-22-1)
-> * Architecture Pattern Catalogue for NZISM
+>
+> [NZISM Control Objective Index](#nzism-control-objective-index)
+> * [1. About information security](#nzism-01)
+> * [2. Information Security within Government](#nzism-02)
+> * [3. Information security governance - roles and responsibilities](#nzism-03)
+> * [4. System Certification and Accreditation](#nzism-04)
+> * [5. Information security documentation](#nzism-05)
+> * [6. Information security monitoring](#nzism-06)
+>   * [6.1. Information Security Reviews](#nzism-06-1)
+>   * [6.2. Vulnerability Analysis](#nzism-06-2)
+>   * [6.3. Change Management](#nzism-06-3)
+>   * [6.4. Business Continuity and Disaster Recovery](#nzism-06-4)
+> * [7. Information Security Incidents](#nzism-07)
+>   * [7.1. Detecting Information Security Incidents](#nzism-07-1)
+>   * [7.2. Reporting Information Security Incidents](#nzism-07-2)
+>   * [7.3. Managing Information Security Incidents](#nzism-07-3)
+> * [8. Physical Security](#nzism-08)
+>   * [8.1. Facilities](#nzism-08-1)
+>   * [8.2. Servers And Network Devices](#nzism-08-2)
+>   * [8.3. Network Infrastructure](#nzism-08-3)
+>   * [8.4. IT Equipment](#nzism-08-4)
+>   * [8.5. Tamper Evident Seals](#nzism-08-5)
+> * [16. Access Control and Passwords](#nzism-16)
+>   * [16.6. Event Logging and Auditing](#nzism-16-6)
+> * [18. Network security](#nzism-18)
+>   * [18.1. Network Management](#nzism-18-1)
+> * [19. Gateway security](#nzism-19)
+>   * [19.1. Gateways](#nzism-19-1)
+>   * [19.2. Cross Domain Solutions](#nzism-19-2)
+> * [22. Enterprise systems security](#nzism-22)
+>   * [22.1. Cloud Computing](#nzism-22-1)
+>
+> Architecture Pattern Catalogue for NZISM
 >   * [Gateway Security Using Firewall Appliances](#apc-gsfa)
-> * AWS Well-Architected Recommendations
->   * [Security](#aws-security-recommendations)
->     * [Security Foundations](#security-foundations)
->     * [Identity and Access Management](#identity-and-access-management)
->     * [Detection](#detection)
->     * [Infrastructure Protection](#infrastructure-protection)
->     * [Data Protection](#data-protection)
->     * [Incident Response](#incident-response)
->   * [Reliability](#aws-reliability-recommendations)
->     * [Definitions](#reliability-definitions)
->     * [Change Management](#change-management)
->     * [Failure Management](#failure-management)
-> * [NZISM Conformance Pack Control Index](#nzism-conformance-pack-control-index)
-> * [AWS Managed Config Rule Catalogue](#aws-managed-config-rule-catalogue)
->   * [elb-logging-enabled](#cr-elb-logging-enabled)
->   * [encrypted-volumes](#cr-encrypted-volumes)
->   * [guardduty-enabled-centralized](#cr-guardduty-enabled-centralized)
->   * [rds-storage-encrypted](#cr-rds-storage-encrypted)
->   * [s3-bucket-ssl-requests-only](#cr-s3-bucket-ssl-requests-only)
->   * [s3-default-encryption-kms](#cr-s3-default-encryption-kms)
->   * [vpc-default-security-group-closed](#cr-vpc-default-security-group-closed)
->   * [vpc-flow-logs-enabled](#cr-vpc-flow-logs-enabled)
->   * [wafv2-logging-enabled](#cr-wafv2-logging-enabled)
-> * [References](#references)
+>
+> AWS Well-Architected Recommendations
+> * [Security](#aws-security-recommendations)
+>   * [Security Foundations](#security-foundations)
+>   * [Identity and Access Management](#identity-and-access-management)
+>   * [Detection](#detection)
+>   * [Infrastructure Protection](#infrastructure-protection)
+>   * [Data Protection](#data-protection)
+>   * [Incident Response](#incident-response)
+> * [Reliability](#aws-reliability-recommendations)
+>   * [Definitions](#reliability-definitions)
+>   * [Change Management](#change-management)
+>   * [Failure Management](#failure-management)
+>
+> [AWS Managed Config Rule Catalogue](#aws-managed-config-rule-catalogue)
+> * [elb-logging-enabled](#cr-elb-logging-enabled)
+> * [encrypted-volumes](#cr-encrypted-volumes)
+> * [guardduty-enabled-centralized](#cr-guardduty-enabled-centralized)
+> * [rds-storage-encrypted](#cr-rds-storage-encrypted)
+> * [s3-bucket-ssl-requests-only](#cr-s3-bucket-ssl-requests-only)
+> * [s3-default-encryption-kms](#cr-s3-default-encryption-kms)
+> * [vpc-default-security-group-closed](#cr-vpc-default-security-group-closed)
+> * [vpc-flow-logs-enabled](#cr-vpc-flow-logs-enabled)
+> * [wafv2-logging-enabled](#cr-wafv2-logging-enabled)
+>
+> [Control Index Catalogue](#control-index-catalogue)
+>
+> [References](#references)
 
 
 ---
@@ -533,18 +541,71 @@ The foundational event logs within your AWS environment include:
 > * [CloudWatch Logs](#ug-cwl), which centralises logs from your applications, your [EC2 instances](#ug-ec2), and the AWS services you use, as a single, consistent, queryable flow of events, ordered by time; and
 > * [AWS Config](#ug-config), which monitors and records your AWS resource configurations and allows you to automate the evaluation and remediation against desired configurations.
 
-AWS services such [API Gateway](#ug-apig), [Lambda](#ug-lambda), [RDS](#ug-rds), [Route53](#ug-route53), and [VPC](#ug-vpc) publish logs to CloudWatch Logs.
+AWS services such [API Gateway](#ug-apigw), [Lambda](#ug-lambda), [RDS](#ug-rds), [Route53](#ug-route53), and [VPC](#ug-vpc) publish logs to CloudWatch Logs.
 
 
 ##### Agency Guidance
+A foundational practice is to [establish a set of detection mechanisms](#configure-service-and-application-logging) at the account level. This base set of mechanisms is aimed at recording and detecting a wide range of actions on all resources in your account. They allow you to build out a comprehensive detective capability with options that include automated remediation, and partner integrations to add functionality.
 
+Event logs can themselves contain data that is considered sensitive. For example, when application data has erroneously found its way into logs that the [CloudWatch Logs](#ug-cwl) agent is capturing. Therefore, you should enforce [encryption at rest](#enforce-encryption-at-rest) and [access control](#enforce-access-control) using agency-managed [KMS keys](#ug-kms). Furthermore, you should [audit the use of encryption keys](#audit-the-use-of-encryption-key).
+
+In order to assist with troubleshooting and forensics investigations, you should ensure a minimum duration of event log data is retained for your CloudWatch log groups. The lack of available past event log data makes it difficult to reconstruct and identify potentially malicious events.
 
 
 # 17. Cryptography
 *Work-In-Progress*
 
-# 18. Network security
-*Work-In-Progress*
+
+
+# <a id='nzism-18'>18. Network security</a>
+
+## <a id='nzism-18-1'>18.1. Network Management</a>
+
+##### AWS Responsibilities
+AWS is responsible for ensuring that any change to the configuration of networks within its [Global Infrastructure](#dfn-gi) is authorised and controlled through appropriate change management processes to ensure security, functionality and capability is maintained.
+
+The shared responsibility model for network change management processes within [AWS On-Premises Devices](#dfn-opd) is described in these documents:
+
+[Outposts](#faq-outposts)
+> * [Local connectivity](#ug-outposts-connectivity-local)
+> * [Region connectivity](#ug-outposts-connectivity-region)
+> * [Site Requirements](#ug-outposts-site-requirements)
+
+[Snow Family](#faq-snow)
+> * [Local networking](#ug-snowedge-local-network)
+
+
+##### Agency Responsibilities
+You are responsible for ensuring that any change to the configuration of networks within [your AWS environment](#dfn-env) is authorised and controlled through appropriate change management processes to ensure security, functionality and capability is maintained.
+
+
+### 18.1.13. Limiting network access
+
+#### 18.1.13.C.02.
+#### CID 3205
+
+##### Agency Responsibilities
+You should implement network access controls on the following networking resources within your AWS environment:
+> * [VPC](#ug-vpc) components, including [load balancers](#ug-lb);
+> * [API Gateways](#ug-apigw); and
+> * [Cloudfront] distributions.
+
+
+##### Agency Guidance
+You should first [create network layers](#create-network-layers), then [control traffic](#control-traffic-at-all-layers) and [implement inspection and protection](#implement-inspection-and-protection) at each of these layers. Wherever possible, you should [automate these network protections](#automate-network-protection).
+
+You should apply multiple controls with a defense in depth approach for both inbound and outbound traffic, including the use of [security groups](#ug-vpc-security-groups).
+
+A security group acts as a virtual firewall for your instance to control inbound and outbound traffic. When you launch an instance in a VPC, you can assign up to five security groups to the instance. Security groups act at the instance level, not the subnet level. Therefore, each instance in a subnet in your VPC can be assigned to a different set of security groups.
+
+For each security group, you add rules that control the inbound traffic to instances, and a separate set of rules that control the outbound traffic.
+
+A [network access control list](#ug-vpc-nacl) is an optional layer of security for your VPC that acts as a firewall for controlling traffic in and out of one or more subnets. A network ACL has separate inbound and outbound rules, and each rule can either allow or deny traffic. 
+
+The following architecture patterns implement this control:
+> * [Gateway Security Using Firewall Appliances](#apc-gsfa)
+
+
 
 # <a id='nzism-19'>19. Gateway security</a>
 
@@ -553,7 +614,7 @@ AWS services such [API Gateway](#ug-apig), [Lambda](#ug-lambda), [RDS](#ug-rds),
 ##### AWS Responsibilities
 AWS is responsible for ensuring that gateways are properly configured to protect its [Global Infrastructure](#dfn-gi), and the information transferred between systems from different security domains.
 
-The responsibilities that AWS assumes for gateway configuration within [AWS On-Premises Devices](#dfn-opd), and information transferred to and from the AWS Global Infrastructure, is described in these documents:
+The shared responsibility model for gateway configuration within [AWS On-Premises Devices](#dfn-opd), and information transferred to and from the AWS Global Infrastructure, is described in these documents:
 
 [Outposts](#faq-outposts)
 > * [Local connectivity](#ug-outposts-connectivity-local)
@@ -561,13 +622,14 @@ The responsibilities that AWS assumes for gateway configuration within [AWS On-P
 > * [Site Requirements](#ug-outposts-site-requirements)
 
 [Snow Family](#faq-snow)
-> *Not Applicable*
+> * [Local networking](#ug-snowedge-local-network)
 
 You have self-service access to [independent assessments](#dfn-ia) of the AWS gateway controls.
 
 
 ##### Agency Responsibilities
-You are responsible for ensuring that gateways are properly configured to protect [your AWS environment](#dfn-env), and the information transferred between systems from different security domains. Your responsibilities for the various type of gateway are detailed in Section 19.1.
+You are responsible for ensuring that gateways are properly configured to protect [your AWS environment](#dfn-env), and the information transferred between systems from different security domains.
+
 
 ### 19.1.1 to 19.1.10
 No applicable AWS guidance
@@ -1021,6 +1083,7 @@ Public application load balancers should also use [WAF](#ug-waf) to allow or blo
 ## NZISM Controls Implemented
 | NZISM CID         | Implementation Features 
 |-------------------|--------------------------
+| [3205](#cid-3205) | Security Group Rules
 | [3548](#cid-3548) | Centralised TGW and IGW
 | [3562](#cid-3562) | Firewall Logs, SCP, Flow Logs, GuardDuty
 | [3578](#cid-3578) | Security Group Rules, Flow Logs, NAT Gateway
@@ -1039,6 +1102,7 @@ Public application load balancers should also use [WAF](#ug-waf) to allow or blo
 * [guardduty-enabled-centralized](#cr-guardduty-enabled-centralized)
 * [vpc-default-security-group-closed](#cr-vpc-default-security-group-closed)
 * [vpc-flow-logs-enabled](#cr-vpc-flow-logs-enabled)
+* [vpc-sg-open-only-to-authorized-ports](cr-vpc-sg-open-only-to-authorized-ports)
 * [wafv2-logging-enabled](#cr-wafv2-logging-enabled)
 
 
@@ -1364,11 +1428,11 @@ A [VPC](#ug-vpc) allows you to define your network topology that spans an [AWS R
 
 When an instance, RDS database, or other service is launched within a VPC, it has its own security group per network interface. This firewall is outside the operating system layer and can be used to define rules for allowed inbound and outbound traffic. You can also define relationships between security groups. For example, instances within a database tier security group only accept traffic from instances within the application tier, by reference to the security groups applied to the instances involved. Unless you are using non-TCP protocols, it shouldn’t be necessary to have an EC2 instance directly accessible by the internet (even with ports restricted by security groups) without a [load balancer](#ug-lb), or [CloudFront](#ug-cloudfront). This helps protect it from unintended access through an operating system or application issue. A subnet can also have a network ACL attached to it, which acts as a stateless firewall. You should configure the network ACL to narrow the scope of traffic allowed between layers, note that you need to define both inbound and outbound rules.
 
-While some AWS services require components to access the internet to make API calls (this being where [AWS API endpoints are located](#aws-service-endpoints)), others use [endpoints](#ug-vpc-endpoints) within your VPCs. Many AWS services including [Amazon S3](#ug-s3) and [DynamoDB](#ug-dynamo) support VPC endpoints, and this technology has been generalized in [AWS PrivateLink](#ug-vpc-privatelink). For VPC assets that need to make outbound connections to the internet, these can be made outbound only (one-way) through an AWS managed NAT gateway, outbound only internet gateway, or web proxies that you create and manage. 
+While some AWS services require components to access the internet to make API calls (this being where [AWS API endpoints are located](#aws-service-endpoints)), others use [endpoints](#ug-vpc-endpoints) within your VPCs. Many AWS services including [Amazon S3](#ug-s3) and [DynamoDB](#ug-dynamodb) support VPC endpoints, and this technology has been generalized in [AWS PrivateLink](#ug-vpc-privatelink). For VPC assets that need to make outbound connections to the internet, these can be made outbound only (one-way) through an AWS managed NAT gateway, outbound only internet gateway, or web proxies that you create and manage. 
 
 
 ### Implement inspection and protection
-Inspect and filter your traffic at each layer. For components transacting over HTTP-based protocols, a web application firewall can help protect from common attacks. [AWS WAF](#ug-waf) is a web application firewall that lets you monitor and block HTTP(s) requests that match your configurable rules that are forwarded to an [Amazon API Gateway](#ug-apig) API, [Amazon CloudFront](#ug-cloudfront), or an [Application Load Balancer](#ug-alb). To get started with AWS WAF, you can use [AWS Managed Rules](#ug-waf-managed-rules) - including [vendor-managed rules from the AWS Marketplace](#aws-waf-managed-rule-marketplace) - in combination with your own, or use existing [partner integrations](#aws-waf-delivery-partners).
+Inspect and filter your traffic at each layer. For components transacting over HTTP-based protocols, a web application firewall can help protect from common attacks. [AWS WAF](#ug-waf) is a web application firewall that lets you monitor and block HTTP(s) requests that match your configurable rules that are forwarded to an [Amazon API Gateway](#ug-apigw) API, [Amazon CloudFront](#ug-cloudfront), or an [Application Load Balancer](#ug-alb). To get started with AWS WAF, you can use [AWS Managed Rules](#ug-waf-managed-rules) - including [vendor-managed rules from the AWS Marketplace](#aws-waf-managed-rule-marketplace) - in combination with your own, or use existing [partner integrations](#aws-waf-delivery-partners).
 
 You can use [AWS Firewall Manager](#ug-firewall-manager) for managing AWS WAF, [AWS Shield Advanced protections](#ug-shield-advanced-resource-protections), and Amazon VPC [security groups](#ug-vpc-security-groups) across [AWS Organizations](#ug-organizations). Firewall Manager allows you to centrally configure and manage firewall rules across your accounts and applications, making it easier to scale enforcement of common rules. Firewall Manager also enables you to rapidly respond to [layer 7 DDoS](#ug-waf-ddos-protection) events; either using AWS Shield Advanced, or using solutions that can automatically block unwanted requests to your web applications. One such solution is [WAF Security Automations](#solution-wsa), which deploys a web ACL that acts as a central inspection and decision point for all incoming requests. This solution includes functions such SQL Injection protection, Cross-site scripting (XSS)protection, HTTP Flood protection, and IP reputation checks for known threat actors.
 
@@ -1564,8 +1628,6 @@ Both tokenization and encryption can be used to secure and protect information a
 By defining an encryption approach that includes the storage, rotation, and access control of keys, you can help provide protection for your content against unauthorized users and against unnecessary exposure to authorized users. [AWS KMS](#ug-kms) helps you manage encryption keys and [integrates with many AWS services](#aws-kms-integrations).
 
 KMS provides durable, secure, and redundant storage for your master keys. You can define your key aliases as well as key-level policies. The policies help you define key administrators as well as key users. Additionally, [AWS CloudHSM](#ug-hsm) is a cloud-based hardware security module (HSM) that enables you to easily generate and use your own encryption keys in the AWS Cloud. It helps you meet corporate, contractual, and regulatory compliance requirements for data security by using FIPS 140-2 Level 3 validated HSMs.
-
-Enforce encryption at rest: You should ensure that the only way to store data is by using encryption. AWS KMS integrates seamlessly with many AWS services to make it easier for you to encrypt all your data at rest. For example, in Amazon S3 you can set default encryption on a bucket so that all new objects are automatically encrypted. Additionally, Amazon EC2 and Amazon S3 support the enforcement of encryption by setting default encryption. You can use AWS Managed Config Rules to check automatically that you are using encryption, for example, for EBS volumes, RDS instances, and S3 buckets. 
 
 
 ### Enforce encryption at rest
@@ -1822,7 +1884,7 @@ AWS makes an abundance of monitoring and log information available for consumpti
 * AWS provides tooling to collect operating system-level logs and stream them into [CloudWatch Logs](#ug-cwl).
 * Custom [Amazon CloudWatch](#ug-cw) metrics can be used for metrics of any dimension.
 * Amazon ECS and [AWS Lambda](#ug-lambda) stream log data to [CloudWatch Logs](#ug-cwl).
-* [Amazon API Gateway](#ug-apig) provides metrics for number of requests, erroneous requests, and latency for your APIs.
+* [Amazon API Gateway](#ug-apigw) provides metrics for number of requests, erroneous requests, and latency for your APIs.
 * [AWS Personal Health Dashboard](#ug-health) gives you a personalized view into the performance and availability of the AWS services underlying your AWS resources.
 
 In addition, monitor all of your external endpoints from remote locations to ensure that they are independent of your base implementation. This active monitoring can be done with synthetic transactions (sometimes referred to as “user canaries”, but not to be confused with canary deployments) which periodically execute some number of common tasks performed by consumers of the application. Keep these short in duration and be sure not to overload your workflow during testing. [Amazon CloudWatch Synthetics](#ug-cw-synthetic) enables you to create canaries to monitor your endpoints and APIs. You can also combine the synthetic canary client nodes with AWS X-Ray console to pinpoint which synthetic canaries are experiencing issues with errors, faults, or throttling rates for the selected time frame.
@@ -1890,7 +1952,7 @@ Scale resources reactively when necessary if availability is impacted, so as to 
 
 You first must configure health checks and the criteria on these checks to indicate when availability is impacted by lack of resources. Then either notify the appropriate personnel to manually scale the resource, or trigger automation to automatically scale it.
 
-Scale can be manually adjusted for your workload, for example, changing the number of EC2 instances in an [Auto Scaling](#ug-as-ec2) group or modifying throughput of a [DynamoDB](#ug-dynamo) table can be done through the console or AWS CLI. However automation should be used whenever possible.
+Scale can be manually adjusted for your workload, for example, changing the number of EC2 instances in an [Auto Scaling](#ug-as-ec2) group or modifying throughput of a [DynamoDB](#ug-dynamodb) table can be done through the console or AWS CLI. However automation should be used whenever possible.
 
 ### Obtain resources upon detection that more resources are needed for a workload
 Scale resources proactively to meet demand and avoid availability impact.
@@ -2044,7 +2106,7 @@ AWS Local Zones act similarly to Availability Zones within their respective AWS 
 
 
 #### Global Edge Network
-Amazon Global Edge Network consists of edge locations in cities around the world. [Amazon CloudFront](#ug-cloudfront) uses this network to deliver content to end users with lower latency. [AWS Global Accelerator](#ug-ga) enables you to create your workload endpoints in these edge locations to provide onboarding to the AWS global network close to your users. [Amazon API Gateway](#ug-apig) enables edge-optimized API endpoints using a CloudFront distribution to facilitate client access through the closest edge location. 
+Amazon Global Edge Network consists of edge locations in cities around the world. [Amazon CloudFront](#ug-cloudfront) uses this network to deliver content to end users with lower latency. [AWS Global Accelerator](#ug-ga) enables you to create your workload endpoints in these edge locations to provide onboarding to the AWS global network close to your users. [Amazon API Gateway](#ug-apigw) enables edge-optimized API endpoints using a CloudFront distribution to facilitate client access through the closest edge location. 
 
 
 #### Regions
@@ -2124,14 +2186,6 @@ Use AWS or third-party tools to automate system recovery and route traffic to th
 Based on configured health checks, AWS services, such as [Elastic Load Balancing](#ug-lb) and [AWS Auto Scaling](#ug-as-ec2), can distribute load to healthy Availability Zones while services, such as [Amazon Route 53](#ug-route53) and [AWS Global Accelerator](#ug-ga), can route load to healthy AWS Regions.
 
 For workloads on existing physical or virtual data centers or private clouds, [CloudEndure Disaster Recovery](#aws-cloudendure-dr), available through AWS Marketplace, enables organizations to set up an automated disaster recovery strategy to AWS. CloudEndure also supports cross-Region / cross-AZ disaster recovery in AWS.
-
----
-# NZISM Conformance Pack Control Index
-
-NZISM CID         | Control      | Paragraph                    | Objective             | Section |
-------------------|--------------|------------------------------|-----------------------|---------|
-[3548](#cid-3548) | 19.1.11.C.01 | 19.1.11. Using gateways      | 19.1. Gateways        | [19. Gateway security](#nzism-19)|
-[4839](#cid-4839) | 22.1.24.C.04 | 22.1.24. Unauthorised Access | 22.1. Cloud Computing | [22. Enterprise systems security](#nzism-22) |
 
 ---
 # AWS Managed Config Rule Catalogue
@@ -2256,12 +2310,46 @@ Checks whether Amazon Virtual Private Cloud flow logs are found and enabled for 
 > <https://docs.aws.amazon.com/config/latest/developerguide/vpc-flow-logs-enabled.html>
 
 
+
+## <a id='cr-vpc-sg-open-only-to-authorized-ports'>vpc-sg-open-only-to-authorized-ports</a>
+Checks whether any security groups with inbound 0.0.0.0/0 have TCP or UDP ports accessible. The rule is NON_COMPLIANT when a security group with inbound 0.0.0.0/0 has a port accessible which is not specified in the rule parameters.
+> <https://docs.aws.amazon.com/config/latest/developerguide/vpc-sg-open-only-to-authorized-ports.html>
+
+##### Resources In Scope
+* [VPC Security Groups](#ug-vpc-security-groups)
+
+#### Compliance Guide
+You should ensure that common ports are restricted on VPC Security Groups. Failing to restrict access on ports to just trusted sources can lead to attacks against the availability, integrity and confidentiality of systems. By restricting access to resources within a security group from the internet (0.0.0.0/0), remote access can be limited to internal systems.
+
+The authorized Internet port list is:
+> * TCP 443
+
+
 ## <a id='cr-wafv2-logging-enabled'>wafv2-logging-enabled</a>
 Checks whether logging is enabled on AWS Web Application Firewall (WAFV2) regional and global web access control list (ACLs). The rule is NON_COMPLIANT if the logging is enabled but the logging destination does not match the value of the parameter.
 > <https://docs.aws.amazon.com/config/latest/developerguide/wafv2-logging-enabled.html>
 
 
+---
+# Control Index Catalogue
 
+NZISM CID         | Control       | Paragraph                           | Objective
+------------------|---------------|-------------------------------------|-------------------------------------------------
+[2022](#cid-2022) | 16.6.12.C.01. | 16.6.12. Event log protection       | [16.6. Event Logging and Auditing](#nzism-16-6)
+[3205](#cid-3205) | 18.1.13.C.02. | 18.1.13. Limiting network access    | [18.1. Network Management](#nzism-18-1)
+[3548](#cid-3548) | 19.1.11.C.01. | 19.1.11. Using gateways             | [19.1. Gateways](#nzism-19-1)
+[3562](#cid-3562) | 19.1.12.C.01. | 19.1.12. Configuration of gateways  | [19.1. Gateways](#nzism-19-1)
+[3578](#cid-3578) | 19.1.13.C.01. | 19.1.13. Operation of gateways      | [19.1. Gateways](#nzism-19-1)
+[3623](#cid-3623) | 19.1.14.C.02. | 19.1.14. Demilitarised zones        | [19.1. Gateways](#nzism-19-1)
+[3660](#cid-3660) | 19.1.19.C.01. | 19.1.19. Administration of gateways | [19.1. Gateways](#nzism-19-1)
+[3676](#cid-3676) | 19.1.19.C.05. | 19.1.19. Administration of gateways | [19.1. Gateways](#nzism-19-1)
+[3683](#cid-3683) | 19.1.20.C.01. | 19.1.20. System user authentication | [19.1. Gateways](#nzism-19-1)
+[3685](#cid-3685) | 19.1.20.C.02. | 19.1.20. System user authentication | [19.1. Gateways](#nzism-19-1)
+[3686](#cid-3686) | 19.1.20.C.03. | 19.1.20. System user authentication | [19.1. Gateways](#nzism-19-1)
+[3712](#cid-3712) | 19.1.23.C.01. | 19.1.23. Testing of gateways        | [19.1. Gateways](#nzism-19-1)
+[4820](#cid-4820) | 22.1.22.C.01. | 22.1.22. Offshore Services          | [22.1. Cloud Computing](#nzism-22-1)
+[4821](#cid-4821) | 22.1.22.C.02. | 22.1.22. Offshore Services          | [22.1. Cloud Computing](#nzism-22-1)
+[4839](#cid-4839) | 22.1.24.C.04. | 22.1.24. Unauthorised Access        | [22.1. Cloud Computing](#nzism-22-1)
 
 
 ---
@@ -2522,13 +2610,16 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 #### AWS Snowball Edge <a id='ug-snowedge'/>
 > <https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html>
 
+##### Local Networking <a id='ug-snowedge-local-network'/>
+> <https://docs.aws.amazon.com/snowball/latest/developer-guide/getting-started-connect.html>
+
 ##### Logging and Monitoring <a id='ug-snowedge-monitoring'/>
 > <https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html>
 
 
 ### Database
 
-#### Amazon DynamoDB <a id='ug-dynamo'/>
+#### Amazon DynamoDB <a id='ug-dynamodb'/>
 > <https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html>
 
 #### Amazon RDS <a id='ug-rds'/>
@@ -2815,7 +2906,7 @@ AWS Artifact is a no cost self-service portal for on-demand access to AWS compli
 
 ### Networking and Content Delivery
 
-#### Amazon API Gateway <a id='ug-apig'/>
+#### Amazon API Gateway <a id='ug-apigw'/>
 > <https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html>
 
 #### Amazon CloudFront <a id='ug-cloudfront'/>
