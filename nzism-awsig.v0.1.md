@@ -1113,7 +1113,7 @@ Public application load balancers should also use [WAF](#ug-waf) to allow or blo
 * [guardduty-enabled-centralized](#cr-guardduty-enabled-centralized)
 * [vpc-default-security-group-closed](#cr-vpc-default-security-group-closed)
 * [vpc-flow-logs-enabled](#cr-vpc-flow-logs-enabled)
-* [vpc-sg-open-only-to-authorized-ports](cr-vpc-sg-open-only-to-authorized-ports)
+* [vpc-sg-open-only-to-authorized-ports](#cr-vpc-sg-open-only-to-authorized-ports)
 * [wafv2-logging-enabled](#cr-wafv2-logging-enabled)
 
 
@@ -2428,7 +2428,7 @@ The authorized Internet port list is:
 > * TCP 443
 
 #### Control Mappings
-> [3205](#cid-3205)]
+> [3205](#cid-3205)
 
 
 
