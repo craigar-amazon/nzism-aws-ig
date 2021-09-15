@@ -54,6 +54,7 @@
 >
 > [NZISM Conformance Pack Config Rule Catalogue](#nzism-conformance-pack-config-rule-catalogue)
 > * [cloudwatch-log-group-encrypted](#cr-cloudwatch-log-group-encrypted)
+> * [cw-loggroup-retention-period-check](#cr-cw-loggroup-retention-period-check)
 > * [elb-logging-enabled](#cr-elb-logging-enabled)
 > * [encrypted-volumes](#cr-encrypted-volumes)
 > * [guardduty-enabled-centralized](#cr-guardduty-enabled-centralized)
