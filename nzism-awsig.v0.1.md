@@ -549,7 +549,7 @@ AWS services such [API Gateway](#ug-apigw), [Lambda](#ug-lambda), [RDS](#ug-rds)
 ##### Agency Guidance
 A foundational practice is to [establish a set of detection mechanisms](#configure-service-and-application-logging) at the account level. This base set of mechanisms is aimed at recording and detecting a wide range of actions on all resources in your account. They allow you to build out a comprehensive detective capability with options that include automated remediation, and partner integrations to add functionality.
 
-Event logs can themselves contain data that is considered sensitive. For example, when application data has erroneously found its way into logs that the [CloudWatch Logs](#ug-cwl) agent is capturing. Therefore, you should enforce [encryption at rest](#enforce-encryption-at-rest) and [access control](#enforce-access-control) using agency-managed [KMS keys](#ug-kms). Furthermore, you should [audit the use of encryption keys](#audit-the-use-of-encryption-key).
+Event logs can themselves contain data that is considered sensitive. For example, when application data has erroneously found its way into logs that the [CloudWatch Logs](#ug-cwl) agent is capturing. Therefore, you should enforce [encryption at rest](#enforce-encryption-at-rest) and [access control](#enforce-access-control) using agency-managed [KMS keys](#ug-kms). Furthermore, you should [audit the use of encryption keys](#audit-the-use-of-encryption-keys).
 
 In order to assist with troubleshooting and forensics investigations, you should ensure a minimum duration of event log data is retained for your CloudWatch log groups. The lack of available past event log data makes it difficult to reconstruct and identify potentially malicious events.
 
